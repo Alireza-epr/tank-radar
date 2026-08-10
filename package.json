@@ -1,0 +1,29 @@
+{
+  "name": "tank-radar",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "backend:dev": "npm run dev --workspace=apps/backend",
+    "backend:test": "npm run test --workspace=apps/backend",
+    "backend:lint": "npm run lint --workspace=apps/backend",
+    "backend:pilot": "npm run pilot --workspace=apps/backend",
+    "frontend:dev": "npm run dev --workspace=apps/frontend",
+    "frontend:build": "npm run build --workspace=apps/frontend",
+    "frontend:test": "npm run test --workspace=apps/frontend",
+    "frontend:lint": "npm run lint --workspace=apps/frontend",
+    "packages:build": "npm run build --workspace=packages/enum --workspace=packages/types --workspace=packages/utils",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm:backend:dev\" \"npm:frontend:dev\"",
+    "test": "npm run backend:test && npm run frontend:test",
+    "lint": "npm run backend:lint && npm run frontend:lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

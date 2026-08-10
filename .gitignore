@@ -1,0 +1,18 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+.claude
+
+# build output
+dist/
+*.tsbuildinfo
+
+# sqlite data (kept as .gitkeep placeholders instead)
+apps/backend/data/*.sqlite
+apps/backend/data/*.sqlite-*
+apps/backend/data/pilot/*.sqlite
+apps/backend/data/pilot/*.sqlite-*
+
+coverage/
