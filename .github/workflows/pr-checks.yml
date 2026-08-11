@@ -1,0 +1,81 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'apps/frontend/**'
+      - 'apps/backend/**'
+      - 'packages/**'
+
+# Cancel superseded runs when new commits are pushed to the same PR branch.
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ----- Setup -----
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Build shared packages
+        run: npm run packages:build
+
+      # ----- Backend checks -----
+      - name: Create .env file for CI
+        working-directory: apps/backend
+        run: cp .env.example .env
+
+      - name: Run Backend Lint
+        working-directory: apps/backend
+        run: npm run lint
+
+      - name: Run Backend Type Check
+        working-directory: apps/backend
+        run: npm run typecheck
+
+      - name: Verify Backend Startup (Smoke Test)
+        working-directory: apps/backend
+        run: |
+          npm run build
+          node dist/src/core/server.js &
+          echo $! > server.pid
+          sleep 5
+          curl --fail -X GET "localhost:1370/v1/api/health"
+          kill $(cat server.pid)
+
+      - name: Run Backend Unit Tests
+        working-directory: apps/backend
+        run: npm test
+
+      # ----- Frontend checks -----
+      # apps/frontend hasn't been scaffolded yet (see BACKLOG.md Epic 3).
+      # Uncomment these once it exists with matching package.json scripts
+      # (and add a lint:style / e2e step too, only if that tooling is
+      # actually part of the frontend setup — this project's BACKLOG doesn't
+      # call for Playwright/stylelint the way the reference project did).
+      # - name: Run Frontend Type Check
+      #   working-directory: apps/frontend
+      #   run: npm run typecheck
+      #
+      # - name: Run Frontend Lint
+      #   working-directory: apps/frontend
+      #   run: npm run lint
+      #
+      # - name: Run Frontend Unit Tests
+      #   working-directory: apps/frontend
+      #   run: npm run test
