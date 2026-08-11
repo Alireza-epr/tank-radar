@@ -9,6 +9,8 @@
   "scripts": {
     "backend:dev": "npm run dev --workspace=apps/backend",
     "backend:test": "npm run test --workspace=apps/backend",
+    "backend:format": "npm run format --workspace=apps/backend",
+    "backend:typecheck": "npm run typecheck --workspace=apps/backend",
     "backend:lint": "npm run lint --workspace=apps/backend",
     "backend:pilot": "npm run pilot --workspace=apps/backend",
     "frontend:dev": "npm run dev --workspace=apps/frontend",

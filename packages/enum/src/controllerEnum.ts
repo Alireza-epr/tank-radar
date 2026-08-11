@@ -1,0 +1,12 @@
+export const EStatusCode = {
+    OK_200: 200,
+    BAD_REQUEST_400: 400,
+    NOT_FOUND_404: 404,
+    SERVICE_UNAVAILABLE_503: 503,
+} as const
+
+export const EResponseError = {
+    BAD_JSON_400: "BAD_JSON",
+    ID_NOT_FOUND_404: "ID_NOT_FOUND",
+    SERVICE_UNAVAILABLE_503: "SERVICE_UNAVAILABLE",
+} as const
