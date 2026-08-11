@@ -1,5 +1,5 @@
 
-import { parseConsoleLog, parseDbPath, parseNodeENV, parsePort } from "@/utils";
+import { parseConsoleLog, parseDbPath, parseNodeENV, parsePort, parseStationsApiUrl } from "@/utils";
 import { config as loadEnv } from "@dotenvx/dotenvx";
 loadEnv();
 
@@ -8,4 +8,5 @@ export const env = {
   enable_console_log: parseConsoleLog(process.env.ENABLE_CONSOLE_LOG),
   port: parsePort(process.env.PORT),
   dbPath: parseDbPath(process.env.DB_PATH),
+  stationsApiUrl: parseStationsApiUrl(process.env.STATIONS_API_URL),
 };

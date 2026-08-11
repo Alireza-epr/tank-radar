@@ -3,7 +3,7 @@ import { ELogType } from "@packages/enum";
 import { TLogType } from "@packages/types";
 import { formatTimestamp, shortenText } from "@packages/utils";
 
-export const log = (
+export const backend_log = (
   a_Message: string,
   a_Type: TLogType = ELogType.info,
   a_MessageLimit?: number,

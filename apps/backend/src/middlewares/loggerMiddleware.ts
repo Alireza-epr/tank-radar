@@ -1,4 +1,4 @@
-import { log } from '@/utils/generalUtils';
+import { backend_log } from '@/utils/generalUtils';
 import { ELogType } from '@packages/enum';
 import { TLogType } from '@packages/types';
 import { Request, Response, NextFunction } from 'express';
@@ -9,7 +9,7 @@ export const requestLogger = (
   a_Res: Response,
   a_Next: NextFunction,
 ): void => {
-  log(`${a_Req.method} ${a_Req.originalUrl}`, ELogType.request);
+  backend_log(`${a_Req.method} ${a_Req.originalUrl}`, ELogType.request);
   a_Next();
 };
 
@@ -30,7 +30,7 @@ export const responseLogger = (
     if (a_Res.statusCode >= 400 && a_Res.statusCode < 500) type = ELogType.warn;
     if (a_Res.statusCode >= 500) type = ELogType.error;
 
-    log(message, type);
+    backend_log(message, type);
   });
 
   a_Next();
@@ -38,14 +38,14 @@ export const responseLogger = (
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err: Error) => {
-  log(`Uncaught Exception: ${err.stack || err.message}`, ELogType.error);
+  backend_log(`Uncaught Exception: ${err.stack || err.message}`, ELogType.error);
 });
 
 // Handle unhandled promise rejections
 process.on(
   'unhandledRejection',
   (reason: unknown, promise: Promise<unknown>) => {
-    log(
+    backend_log(
       `Unhandled Rejection at: ${JSON.stringify(promise)} reason: ${String(reason)}`,
       ELogType.error,
     );

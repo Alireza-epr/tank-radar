@@ -5,6 +5,8 @@ export const DEFAULT_ENV: IDefaultEnv = {
   ENABLE_CONSOLE_LOG: 0,
   NODE_ENV: "production",
   DB_PATH: "./data/db/tank-radar.sqlite",
+  STATIONS_API_URL:
+    "https://geoportal.stadt-koeln.de/arcgis/rest/services/verkehr/gefahrgutstrecken/MapServer/0/query?where=objectid+is+not+null&outFields=*&outSR=4326&f=pjson",
 };
 
 export const parsePort = (a_Raw: string | undefined) => {
@@ -28,4 +30,10 @@ export const parseDbPath = (a_Raw: string | undefined) => {
   return a_Raw !== undefined && a_Raw.trim().length > 0
     ? a_Raw
     : DEFAULT_ENV.DB_PATH;
+};
+
+export const parseStationsApiUrl = (a_Raw: string | undefined) => {
+  return a_Raw !== undefined && a_Raw.trim().length > 0
+    ? a_Raw
+    : DEFAULT_ENV.STATIONS_API_URL;
 };
