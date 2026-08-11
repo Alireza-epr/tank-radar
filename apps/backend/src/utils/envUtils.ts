@@ -4,6 +4,7 @@ export const DEFAULT_ENV: IDefaultEnv = {
   PORT: 1370,
   ENABLE_CONSOLE_LOG: 0,
   NODE_ENV: "production",
+  DB_PATH: "./data/db/tank-radar.sqlite",
 };
 
 export const parsePort = (a_Raw: string | undefined) => {
@@ -21,4 +22,10 @@ export const parseNodeENV = (a_Raw: string | undefined) => {
 
 export const parseConsoleLog = (a_Raw: string | undefined) => {
   return a_Raw === "1" ? 1 : a_Raw === "0" ? 0 : DEFAULT_ENV.ENABLE_CONSOLE_LOG;
+};
+
+export const parseDbPath = (a_Raw: string | undefined) => {
+  return a_Raw !== undefined && a_Raw.trim().length > 0
+    ? a_Raw
+    : DEFAULT_ENV.DB_PATH;
 };
