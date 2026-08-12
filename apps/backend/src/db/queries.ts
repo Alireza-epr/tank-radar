@@ -1,9 +1,13 @@
 import { db } from "@/db/config";
-import { IStation, IUpsertStationsResult } from "@/types";
+import { IStation, ISyncRunInput, IUpsertStationsResult } from "@/types";
 import { isValidStation, parseStreetFromAddress } from "@/utils/apiUtils";
 import { backend_log } from "@/utils/generalUtils";
 import { ELogType } from "@packages/enum";
 import { formatTimestamp } from "@packages/utils";
+
+/* 
+  Upsert Queries
+*/
 
 // New objectid -> insert (import_date stays fixed at first import).
 // Existing objectid -> overwrite street/address/coords, touch update_date,
@@ -63,4 +67,42 @@ export const upsertStations = (a_Stations: IStation[]): IUpsertStationsResult =>
 
   const { deactivated } = upsertStationsTransaction(validStations, formatTimestamp());
   return { upserted: validStations.length, skipped: a_Stations.length - validStations.length, deactivated };
+};
+
+/* 
+  Sync Queries
+*/
+const insertSyncRunStatement = db.prepare(`
+  INSERT INTO sync_runs (started_at, status, records_fetched, records_upserted, records_deactivated)
+  VALUES (@startedAt, 'running', 0, 0, 0)
+`);
+
+const completeSyncRunStatement = db.prepare(`
+  UPDATE sync_runs
+  SET finished_at = @finishedAt,
+      status = @status,
+      records_fetched = @recordsFetched,
+      records_upserted = @recordsUpserted,
+      records_deactivated = @recordsDeactivated,
+      error = @error
+  WHERE id = @id
+`);
+
+// Inserts a "running" row and returns its id, so the caller can update the
+// same row once the sync finishes (or fails).
+export const startSyncRun = (): number => {
+  const { lastInsertRowid } = insertSyncRunStatement.run({ startedAt: formatTimestamp() });
+  return Number(lastInsertRowid);
+};
+
+export const completeSyncRun = (a_Input: ISyncRunInput): void => {
+  completeSyncRunStatement.run({
+    id: a_Input.id,
+    finishedAt: formatTimestamp(),
+    status: a_Input.status,
+    recordsFetched: a_Input.recordsFetched,
+    recordsUpserted: a_Input.recordsUpserted,
+    recordsDeactivated: a_Input.recordsDeactivated,
+    error: a_Input.error ?? null,
+  });
 };
