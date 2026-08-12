@@ -4,11 +4,16 @@ import type { Request, Response } from "express";
 jest.mock("@/sync/runSync", () => ({
   runSync: jest.fn(),
 }));
+jest.mock("@/db/queries", () => ({
+  getSyncMeta: jest.fn(),
+}));
 
 import { runSync } from "@/sync/runSync";
-import { syncController } from "@/modules/sync/sync.controller";
+import { getSyncMeta } from "@/db/queries";
+import { syncController, syncMetaController } from "@/modules/sync/sync.controller";
 
 const mockedRunSync = runSync as jest.MockedFunction<typeof runSync>;
+const mockedGetSyncMeta = getSyncMeta as jest.MockedFunction<typeof getSyncMeta>;
 
 const createMockResponse = () => {
   const res = {} as Response;
@@ -57,6 +62,39 @@ describe("syncController", () => {
         success: false,
         error: ["Failed to fetch stations from source API"],
       }),
+    );
+  });
+});
+
+describe("syncMetaController", () => {
+  beforeEach(() => {
+    mockedGetSyncMeta.mockReset();
+  });
+
+  it("responds_200_with_latest_and_lastSuccess", () => {
+    const meta = {
+      latest: { id: 2, status: "failed" as const, startedAt: "t1", finishedAt: "t2", recordsFetched: 0, recordsUpserted: 0, recordsDeactivated: 0, error: "network down" },
+      lastSuccess: { id: 1, status: "success" as const, startedAt: "t0", finishedAt: "t0b", recordsFetched: 122, recordsUpserted: 122, recordsDeactivated: 0, error: null },
+    };
+    mockedGetSyncMeta.mockReturnValue(meta);
+    const res = createMockResponse();
+
+    syncMetaController({} as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true, entries: [meta] }),
+    );
+  });
+
+  it("responds_200_with_nulls_when_no_sync_has_ever_run", () => {
+    mockedGetSyncMeta.mockReturnValue({ latest: null, lastSuccess: null });
+    const res = createMockResponse();
+
+    syncMetaController({} as Request, res);
+
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ entries: [{ latest: null, lastSuccess: null }] }),
     );
   });
 });

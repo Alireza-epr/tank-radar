@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { controllerResponse } from "@/utils";
 import { EStatusCode } from "@packages/enum";
 import { runSync } from "@/sync/runSync";
+import { getSyncMeta } from "@/db/queries";
 
 export const syncController = async (a_Req: Request, a_Res: Response) => {
   const result = await runSync();
@@ -17,5 +18,14 @@ export const syncController = async (a_Req: Request, a_Res: Response) => {
   return controllerResponse(a_Res, EStatusCode.OK_200, {
     success: true,
     entries: [result],
+  });
+};
+
+export const syncMetaController = (a_Req: Request, a_Res: Response) => {
+  const meta = getSyncMeta();
+
+  return controllerResponse(a_Res, EStatusCode.OK_200, {
+    success: true,
+    entries: [meta],
   });
 };

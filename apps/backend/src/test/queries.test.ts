@@ -7,7 +7,7 @@ import type { IStation } from "@/types";
 process.env.DB_PATH = ":memory:";
 
 import { db } from "@/db/config";
-import { upsertStations } from "@/db/queries";
+import { upsertStations, startSyncRun, completeSyncRun, getSyncMeta } from "@/db/queries";
 
 const stations = fixture.features as IStation[];
 
@@ -110,5 +110,88 @@ describe("upsertStations", () => {
 
     expect(result).toEqual({ upserted: 0, skipped: 1, deactivated: 0 });
     expect(totalCount()).toBe(0);
+  });
+});
+
+describe("getSyncMeta", () => {
+  beforeEach(() => {
+    db.exec("DELETE FROM sync_runs");
+  });
+
+  it("returns_null_for_both_when_no_sync_has_ever_run", () => {
+    expect(getSyncMeta()).toEqual({ latest: null, lastSuccess: null });
+  });
+
+  it("reports_status_running_for_a_row_that_was_started_but_never_completed", () => {
+    startSyncRun();
+
+    const meta = getSyncMeta();
+
+    expect(meta.latest?.status).toBe("running");
+    expect(meta.latest?.finishedAt).toBeNull();
+    expect(meta.lastSuccess).toBeNull();
+  });
+
+  it("returns_the_same_run_as_both_latest_and_lastSuccess_when_it_succeeded", () => {
+    const id = startSyncRun();
+    completeSyncRun({
+      id,
+      status: "success",
+      recordsFetched: 122,
+      recordsUpserted: 122,
+      recordsDeactivated: 0,
+    });
+
+    const meta = getSyncMeta();
+
+    expect(meta.latest?.id).toBe(id);
+    expect(meta.latest?.status).toBe("success");
+    expect(meta.lastSuccess?.id).toBe(id);
+  });
+
+  it("returns_null_lastSuccess_when_the_only_run_failed", () => {
+    const id = startSyncRun();
+    completeSyncRun({
+      id,
+      status: "failed",
+      recordsFetched: 0,
+      recordsUpserted: 0,
+      recordsDeactivated: 0,
+      error: "network down",
+    });
+
+    const meta = getSyncMeta();
+
+    expect(meta.latest?.status).toBe("failed");
+    expect(meta.latest?.error).toBe("network down");
+    expect(meta.lastSuccess).toBeNull();
+  });
+
+  it("keeps_lastSuccess_pointing_at_an_earlier_run_when_the_most_recent_one_failed", () => {
+    const successId = startSyncRun();
+    completeSyncRun({
+      id: successId,
+      status: "success",
+      recordsFetched: 122,
+      recordsUpserted: 122,
+      recordsDeactivated: 0,
+    });
+
+    const failedId = startSyncRun();
+    completeSyncRun({
+      id: failedId,
+      status: "failed",
+      recordsFetched: 0,
+      recordsUpserted: 0,
+      recordsDeactivated: 0,
+      error: "network down",
+    });
+
+    const meta = getSyncMeta();
+
+    expect(meta.latest?.id).toBe(failedId);
+    expect(meta.latest?.status).toBe("failed");
+    expect(meta.lastSuccess?.id).toBe(successId);
+    expect(meta.lastSuccess?.status).toBe("success");
   });
 });

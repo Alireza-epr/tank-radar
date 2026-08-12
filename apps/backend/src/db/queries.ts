@@ -1,5 +1,5 @@
 import { db } from "@/db/config";
-import { IStation, ISyncRunInput, IUpsertStationsResult } from "@/types";
+import { ISyncMeta, ISyncRun, IStation, ISyncRunInput, IUpsertStationsResult } from "@/types";
 import { isValidStation, parseStreetFromAddress } from "@/utils/apiUtils";
 import { backend_log } from "@/utils/generalUtils";
 import { ELogType } from "@packages/enum";
@@ -105,4 +105,39 @@ export const completeSyncRun = (a_Input: ISyncRunInput): void => {
     recordsDeactivated: a_Input.recordsDeactivated,
     error: a_Input.error ?? null,
   });
+};
+
+/*
+  Sync Meta Queries
+*/
+const SYNC_RUN_SELECT_COLUMNS = `
+  id,
+  started_at AS startedAt,
+  finished_at AS finishedAt,
+  status,
+  records_fetched AS recordsFetched,
+  records_upserted AS recordsUpserted,
+  records_deactivated AS recordsDeactivated,
+  error
+`;
+
+const getLatestSyncRunStatement = db.prepare(`
+  SELECT ${SYNC_RUN_SELECT_COLUMNS}
+  FROM sync_runs
+  ORDER BY id DESC
+  LIMIT 1
+`);
+
+const getLastSuccessfulSyncRunStatement = db.prepare(`
+  SELECT ${SYNC_RUN_SELECT_COLUMNS}
+  FROM sync_runs
+  WHERE status = 'success'
+  ORDER BY id DESC
+  LIMIT 1
+`);
+
+export const getSyncMeta = (): ISyncMeta => {
+  const latest = (getLatestSyncRunStatement.get() as ISyncRun | undefined) ?? null;
+  const lastSuccess = (getLastSuccessfulSyncRunStatement.get() as ISyncRun | undefined) ?? null;
+  return { latest, lastSuccess };
 };
