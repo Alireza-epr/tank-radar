@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
 import { env } from "@/core/config";
-import { createTables } from "@/schema/tables";
+import { createTables } from "@/db/schema";
 
 // better-sqlite3 does not create missing parent directories itself.
 fs.mkdirSync(path.dirname(env.dbPath), { recursive: true });

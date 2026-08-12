@@ -2,7 +2,7 @@ import { app } from "@/core/app";
 import { env } from "@/core/config";
 import { formatTimestamp } from "@packages/utils";
 import { backend_log } from "@/utils/generalUtils";
-import "@/core/db";
+import "@/db/config";
 
 app.listen(env.port, "0.0.0.0", () => {
   if (!env.enable_console_log) {
