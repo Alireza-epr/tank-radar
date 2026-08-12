@@ -1,5 +1,13 @@
 import { db } from "@/db/config";
-import { ISyncMeta, ISyncRun, IStation, ISyncRunInput, IUpsertStationsResult } from "@/types";
+import {
+  ISyncMeta,
+  ISyncRun,
+  IStation,
+  ISyncRunInput,
+  IStationResult,
+  IStationsQueryParams,
+  IUpsertStationsResult,
+} from "@/types";
 import { isValidStation, parseStreetFromAddress } from "@/utils/apiUtils";
 import { backend_log } from "@/utils/generalUtils";
 import { ELogType } from "@packages/enum";
@@ -140,4 +148,53 @@ export const getSyncMeta = (): ISyncMeta => {
   const latest = (getLatestSyncRunStatement.get() as ISyncRun | undefined) ?? null;
   const lastSuccess = (getLastSuccessfulSyncRunStatement.get() as ISyncRun | undefined) ?? null;
   return { latest, lastSuccess };
+};
+
+/*
+  Stations List Query
+*/
+
+const DISTANCE_EXPRESSION = "haversine_km(@lat, @lon, lat, lon)";
+
+export const getStations = (a_Params: IStationsQueryParams): IStationResult[] => {
+  const hasCenter = a_Params.lat !== undefined && a_Params.lon !== undefined;
+
+  const whereClauses = ["is_active = 1"];
+  if (a_Params.search !== undefined) {
+    whereClauses.push("lower_unicode(street) LIKE lower_unicode('%' || @search || '%')");
+  }
+  if (a_Params.radius !== undefined) {
+    whereClauses.push(`${DISTANCE_EXPRESSION} <= @radius`);
+  }
+
+  const orderBy =
+    a_Params.sortBy === "distance"
+      ? `ORDER BY distance ${a_Params.sortDir === "desc" ? "DESC" : "ASC"}`
+      : `ORDER BY german_sort_key(street) ${a_Params.sortDir === "desc" ? "DESC" : "ASC"}`;
+
+  const sql = `
+    SELECT
+      objectid,
+      street,
+      raw_address AS rawAddress,
+      lat,
+      lon,
+      ${hasCenter ? `${DISTANCE_EXPRESSION} AS distance` : "NULL AS distance"}
+    FROM stations
+    WHERE ${whereClauses.join(" AND ")}
+    ${orderBy}
+  `;
+
+  const rows = db.prepare(sql).all({
+    lat: a_Params.lat ?? null,
+    lon: a_Params.lon ?? null,
+    search: a_Params.search ?? null,
+    radius: a_Params.radius ?? null,
+  }) as (IStationResult & { distance: number | null })[];
+
+  return rows.map(({ objectid, street, rawAddress, lat, lon, distance }) =>
+    distance === null
+      ? { objectid, street, rawAddress, lat, lon }
+      : { objectid, street, rawAddress, lat, lon, distance },
+  );
 };

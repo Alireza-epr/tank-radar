@@ -7,6 +7,7 @@ export const EStatusCode = {
 
 export const EResponseError = {
     BAD_JSON_400: "BAD_JSON",
+    VALIDATION_ERROR_400: "VALIDATION_ERROR",
     ID_NOT_FOUND_404: "ID_NOT_FOUND",
     SERVICE_UNAVAILABLE_503: "SERVICE_UNAVAILABLE",
 } as const

@@ -17,6 +17,7 @@ export const syncController = async (a_Req: Request, a_Res: Response) => {
 
   return controllerResponse(a_Res, EStatusCode.OK_200, {
     success: true,
+    length: 1,
     entries: [result],
   });
 };
@@ -26,6 +27,7 @@ export const syncMetaController = (a_Req: Request, a_Res: Response) => {
 
   return controllerResponse(a_Res, EStatusCode.OK_200, {
     success: true,
+    length: 1,
     entries: [meta],
   });
 };

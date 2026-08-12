@@ -5,5 +5,6 @@ export const EBaseRoute = {
 export const ERoutes = {
     health : EBaseRoute.api + "/health",
     sync : EBaseRoute.api + "/sync",
-    syncMeta : EBaseRoute.api + "/sync/meta"
+    syncMeta : EBaseRoute.api + "/sync/meta",
+    stations : EBaseRoute.api + "/stations"
 } as const

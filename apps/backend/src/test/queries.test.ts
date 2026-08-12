@@ -7,7 +7,7 @@ import type { IStation } from "@/types";
 process.env.DB_PATH = ":memory:";
 
 import { db } from "@/db/config";
-import { upsertStations, startSyncRun, completeSyncRun, getSyncMeta } from "@/db/queries";
+import { upsertStations, startSyncRun, completeSyncRun, getSyncMeta, getStations } from "@/db/queries";
 
 const stations = fixture.features as IStation[];
 
@@ -193,5 +193,94 @@ describe("getSyncMeta", () => {
     expect(meta.latest?.status).toBe("failed");
     expect(meta.lastSuccess?.id).toBe(successId);
     expect(meta.lastSuccess?.status).toBe("success");
+  });
+});
+
+describe("getStations", () => {
+  beforeEach(() => {
+    db.exec("DELETE FROM stations");
+    upsertStations(stations);
+  });
+
+  it("returns_every_active_station_when_no_filters_are_given", () => {
+    const result = getStations({});
+    expect(result).toHaveLength(stations.length);
+  });
+
+  it("excludes_deactivated_stations", () => {
+    db.prepare("UPDATE stations SET is_active = 0 WHERE objectid = 98").run();
+    const result = getStations({});
+    expect(result.find((s) => s.objectid === 98)).toBeUndefined();
+    expect(result).toHaveLength(stations.length - 1);
+  });
+
+  it("omits_the_distance_field_entirely_when_no_search_center_is_given", () => {
+    const result = getStations({});
+    expect(result[0]).not.toHaveProperty("distance");
+  });
+
+  it("includes_a_numeric_distance_field_when_lat_lon_are_given", () => {
+    const result = getStations({ lat: 50.9, lon: 6.9 });
+    expect(typeof result[0]?.distance).toBe("number");
+  });
+
+  it("sorts_by_street_ascending_by_default", () => {
+    const result = getStations({});
+    const streets = result.map((s) => s.street);
+    expect(streets).toEqual([...streets].sort((a, b) => a.localeCompare(b, "de")));
+  });
+
+  it("sorts_by_street_descending_when_requested", () => {
+    const result = getStations({ sortBy: "street", sortDir: "desc" });
+    const streets = result.map((s) => s.street);
+    const sortedDesc = [...streets].sort((a, b) => b.localeCompare(a, "de"));
+    expect(streets).toEqual(sortedDesc);
+  });
+
+  it("sorts_by_distance_ascending_from_a_given_center", () => {
+    // Objectid 98's own coordinates - it should come back first (distance 0).
+    const result = getStations({ lat: 50.916095041454554, lon: 6.960644911005172, sortBy: "distance" });
+    expect(result[0]?.objectid).toBe(98);
+    const distances = result.map((s) => s.distance ?? 0);
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
+  });
+
+  it("filters_by_radius_and_every_result_is_actually_within_it", () => {
+    const center = { lat: 50.916095041454554, lon: 6.960644911005172 };
+    const result = getStations({ ...center, radius: 2 });
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.length).toBeLessThan(stations.length);
+    for (const station of result) {
+      expect(station.distance).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("finds_a_street_case_insensitively_including_german_umlauts", () => {
+    // objectid 99 is "Hülchrather Str. 17" - search in uppercase, with the umlaut uppercased too.
+    const result = getStations({ search: "HÜLCHRATHER" });
+    expect(result).toHaveLength(1);
+    expect(result[0]?.objectid).toBe(99);
+  });
+
+  it("finds_a_street_by_partial_match", () => {
+    const result = getStations({ search: "onner" }); // mid-word match on "Bonner"
+    expect(result.some((s) => s.objectid === 98)).toBe(true);
+  });
+
+  it("returns_an_empty_array_for_a_search_with_no_matches", () => {
+    expect(getStations({ search: "ZzNoSuchStreetZz" })).toEqual([]);
+  });
+
+  it("combines_search_radius_and_sort_together", () => {
+    const center = { lat: 50.916095041454554, lon: 6.960644911005172 };
+    const result = getStations({ ...center, radius: 10, search: "Str", sortBy: "distance", sortDir: "asc" });
+
+    for (const station of result) {
+      expect(station.street.toLowerCase()).toContain("str");
+      expect(station.distance).toBeLessThanOrEqual(10);
+    }
+    const distances = result.map((s) => s.distance ?? 0);
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
   });
 });
