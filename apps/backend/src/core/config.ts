@@ -1,5 +1,12 @@
 
-import { parseConsoleLog, parseDbPath, parseNodeENV, parsePort, parseStationsApiUrl } from "@/utils";
+import {
+  parseConsoleLog,
+  parseDbPath,
+  parseNodeENV,
+  parsePort,
+  parseStationsApiUrl,
+  parseSyncCronSchedule,
+} from "@/utils";
 import { config as loadEnv } from "@dotenvx/dotenvx";
 loadEnv();
 
@@ -9,4 +16,5 @@ export const env = {
   port: parsePort(process.env.PORT),
   dbPath: parseDbPath(process.env.DB_PATH),
   stationsApiUrl: parseStationsApiUrl(process.env.STATIONS_API_URL),
+  syncCronSchedule: parseSyncCronSchedule(process.env.SYNC_CRON_SCHEDULE),
 };

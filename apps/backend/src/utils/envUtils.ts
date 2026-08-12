@@ -1,3 +1,4 @@
+import { validate as isValidCronExpression } from "node-cron";
 import { IDefaultEnv } from "../types";
 
 export const DEFAULT_ENV: IDefaultEnv = {
@@ -7,6 +8,8 @@ export const DEFAULT_ENV: IDefaultEnv = {
   DB_PATH: "./data/db/tank-radar.sqlite",
   STATIONS_API_URL:
     "https://geoportal.stadt-koeln.de/arcgis/rest/services/verkehr/gefahrgutstrecken/MapServer/0/query?where=objectid+is+not+null&outFields=*&outSR=4326&f=pjson",
+  // Every 12 hours.
+  SYNC_CRON_SCHEDULE: "0 */12 * * *",
 };
 
 export const parsePort = (a_Raw: string | undefined) => {
@@ -36,4 +39,10 @@ export const parseStationsApiUrl = (a_Raw: string | undefined) => {
   return a_Raw !== undefined && a_Raw.trim().length > 0
     ? a_Raw
     : DEFAULT_ENV.STATIONS_API_URL;
+};
+
+export const parseSyncCronSchedule = (a_Raw: string | undefined) => {
+  return a_Raw !== undefined && isValidCronExpression(a_Raw)
+    ? a_Raw
+    : DEFAULT_ENV.SYNC_CRON_SCHEDULE;
 };

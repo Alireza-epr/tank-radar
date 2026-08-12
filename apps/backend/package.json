@@ -18,7 +18,8 @@
     "@packages/types": "*",
     "@packages/utils": "*",
     "better-sqlite3": "^13.0.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "node-cron": "^4.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
