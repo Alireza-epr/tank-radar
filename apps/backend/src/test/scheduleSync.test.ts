@@ -2,6 +2,7 @@ import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 jest.mock("node-cron", () => ({
   schedule: jest.fn(),
+  validate: jest.fn(() => true),
 }));
 jest.mock("@/sync/runSync", () => ({
   runSync: jest.fn(),
