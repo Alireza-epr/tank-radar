@@ -1,6 +1,7 @@
 
 import {
   parseConsoleLog,
+  parseCorsOrigin,
   parseDbPath,
   parseNodeENV,
   parsePort,
@@ -17,4 +18,5 @@ export const env = {
   dbPath: parseDbPath(process.env.DB_PATH),
   stationsApiUrl: parseStationsApiUrl(process.env.STATIONS_API_URL),
   syncCronSchedule: parseSyncCronSchedule(process.env.SYNC_CRON_SCHEDULE),
+  corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
 };

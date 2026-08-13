@@ -1,7 +1,7 @@
 <template>
   <footer class="footer">
-    <div class="footer__scroll">
-      <table class="footer__table">
+    <div class="footer_scroll">
+      <table class="footer_table">
         <thead>
           <tr>
             <th>Street</th>
@@ -15,7 +15,7 @@
           <tr>
             <td
               colspan="5"
-              class="footer__placeholder"
+              class="footer_placeholder"
             >
               No stations loaded yet.
             </td>
@@ -30,7 +30,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "Footer",
+  name: "TheFooter",
   setup() {
     return {};
   },
@@ -45,24 +45,24 @@ export default defineComponent({
   border-top: 1px solid var(--color-border);
 }
 
-.footer__scroll {
+.footer_scroll {
   height: 100%;
   overflow-y: auto;
 }
 
-.footer__table {
+.footer_table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.footer__table th,
-.footer__table td {
+.footer_table th,
+.footer_table td {
   padding: 0.5rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
 
-.footer__placeholder {
+.footer_placeholder {
   color: var(--color-text-muted);
   text-align: center;
 }

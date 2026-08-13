@@ -19,6 +19,13 @@ body {
   --color-text: #1f2328;
   --color-text-muted: #6b7280;
   --color-border: #e2e2e2;
+
+  --color-success: #15803d;
+  --color-success-bg: #dcfce7;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fee2e2;
+  --color-warning: #92400e;
+  --color-warning-bg: #fef3c7;
 }
 
 body {

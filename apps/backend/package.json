@@ -18,22 +18,24 @@
     "@packages/types": "*",
     "@packages/utils": "*",
     "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "node-cron": "^4.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/better-sqlite3": "^9.6.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.7.5",
     "eslint": "^9.13.0",
     "jest": "^29.7.0",
     "prettier": "^3.3.3",
-    "tsc-alias": "^1.9.1",
-    "tsconfig-paths": "^4.2.0",
     "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.11.0"
   }

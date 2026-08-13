@@ -9,8 +9,8 @@ describe("App", () => {
     });
 
     expect(wrapper.text()).toContain("Tank Radar");
-    expect(wrapper.findComponent({ name: "Sidebar" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "Footer" }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "TheSidebar" }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "TheFooter" }).exists()).toBe(true);
     expect(wrapper.findComponent({ name: "MapWrapper" }).exists()).toBe(true);
   });
 });

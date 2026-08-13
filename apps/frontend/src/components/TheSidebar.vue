@@ -1,6 +1,6 @@
 <template>
   <aside class="sidebar">
-    <p class="sidebar__placeholder">
+    <p class="sidebar_placeholder">
       Filters (position, radius, search, sort) and the "get stations" button go here - not wired
       up yet.
     </p>
@@ -11,7 +11,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "Sidebar",
+  name: "TheSidebar",
   setup() {
     return {};
   },
@@ -28,7 +28,7 @@ export default defineComponent({
   overflow-y: auto;
 }
 
-.sidebar__placeholder {
+.sidebar_placeholder {
   color: var(--color-text-muted);
   font-size: 0.875rem;
 }

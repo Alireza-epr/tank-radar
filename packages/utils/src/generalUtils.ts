@@ -1,7 +1,10 @@
 export const formatTimestamp = (a_Date?: Date): string => {
-  const now = a_Date ?? new Date();
-  const timestamp = now.toISOString().replace("T", " ").replace("Z", "");
-  return timestamp.substring(0, 23);
+  return (a_Date ?? new Date()).toISOString();
+};
+
+export const formatLocalDateTime = (a_Value: string | Date): string => {
+  const date = typeof a_Value === "string" ? new Date(a_Value) : a_Value;
+  return date.toLocaleString(undefined, { dateStyle: "short", timeStyle: "medium" });
 };
 
 export const deepSortObject = <T>(a_Object: T): T => {

@@ -10,6 +10,7 @@ export const DEFAULT_ENV: IDefaultEnv = {
     "https://geoportal.stadt-koeln.de/arcgis/rest/services/verkehr/gefahrgutstrecken/MapServer/0/query?where=objectid+is+not+null&outFields=*&outSR=4326&f=pjson",
   // Every 12 hours.
   SYNC_CRON_SCHEDULE: "0 */12 * * *",
+  CORS_ORIGIN: "http://localhost:5173",
 };
 
 export const parsePort = (a_Raw: string | undefined) => {
@@ -45,4 +46,10 @@ export const parseSyncCronSchedule = (a_Raw: string | undefined) => {
   return a_Raw !== undefined && isValidCronExpression(a_Raw)
     ? a_Raw
     : DEFAULT_ENV.SYNC_CRON_SCHEDULE;
+};
+
+export const parseCorsOrigin = (a_Raw: string | undefined) => {
+  return a_Raw !== undefined && a_Raw.trim().length > 0
+    ? a_Raw
+    : DEFAULT_ENV.CORS_ORIGIN;
 };

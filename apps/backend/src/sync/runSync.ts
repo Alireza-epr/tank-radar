@@ -3,7 +3,7 @@ import { upsertStations } from "@/db/queries";
 import { startSyncRun, completeSyncRun } from "@/db/queries";
 import { backend_log } from "@/utils/generalUtils";
 import { ELogType } from "@packages/enum";
-import { ISyncRunInput } from "@/types";
+import { ISyncRunInput } from "@packages/types";
 
 export const runSync = async (): Promise<ISyncRunInput> => {
   const id = startSyncRun();

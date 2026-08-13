@@ -1,24 +1,24 @@
 <template>
   <div class="app">
-    <Header />
-    <main class="app__main">
-      <Sidebar />
+    <TheHeader />
+    <main class="app_main">
+      <TheSidebar />
       <MapWrapper />
     </main>
-    <Footer />
+    <TheFooter />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Header from "@/components/Header.vue";
-import Sidebar from "@/components/Sidebar.vue";
+import TheHeader from "@/components/TheHeader.vue";
+import TheSidebar from "@/components/TheSidebar.vue";
 import MapWrapper from "@/components/MapWrapper.vue";
-import Footer from "@/components/Footer.vue";
+import TheFooter from "@/components/TheFooter.vue";
 
 export default defineComponent({
   name: "App",
-  components: { Header, Sidebar, MapWrapper, Footer },
+  components: { TheHeader, TheSidebar, MapWrapper, TheFooter },
   setup() {
     return {};
   },
@@ -32,7 +32,7 @@ export default defineComponent({
   height: 100vh;
 }
 
-.app__main {
+.app_main {
   flex: 1;
   display: flex;
   min-height: 0;

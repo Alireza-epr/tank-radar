@@ -1,6 +1,6 @@
 import { describe, it, expect } from "@jest/globals";
 import { mount } from "@vue/test-utils";
-import Header from "@/components/Header.vue";
+import Header from "@/components/TheHeader.vue";
 
 describe("Header", () => {
   it("renders_the_app_name", () => {

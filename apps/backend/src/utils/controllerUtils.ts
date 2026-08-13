@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import {deepSortObject} from "@packages/utils";
-import { IResponse } from '@/types';
+import { IResponse } from '@packages/types';
 import { TStatusCode } from '@packages/types';
 
 export const controllerResponse = <T>(

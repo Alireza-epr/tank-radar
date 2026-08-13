@@ -5,4 +5,5 @@ export interface IDefaultEnv {
   DB_PATH: string;
   STATIONS_API_URL: string;
   SYNC_CRON_SCHEDULE: string;
+  CORS_ORIGIN: string;
 }
