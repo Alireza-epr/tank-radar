@@ -145,10 +145,11 @@ export default defineComponent({
   name: "TheSidebar",
   setup() {
     const initialFilters = useStationStore.getState().filters;
+    const initialCenterPoint = useMapStore.getState().centerPoint;
 
     const search = ref(initialFilters.search ?? "");
-    const radius = ref<"" | TRadius>(initialFilters.radius ?? "");
-    const sortBy = ref<TSortBy>(initialFilters.sortBy ?? "street");
+    const radius = ref<"" | TRadius>(initialCenterPoint ? (initialFilters.radius ?? "") : "");
+    const sortBy = ref<TSortBy>(initialCenterPoint ? (initialFilters.sortBy ?? "street") : "street");
     const sortDir = ref<TSortDir>(initialFilters.sortDir ?? "asc");
 
     const isLoading = useZustandStore(useAppStore, (a_State) => a_State.isLoading);
@@ -173,12 +174,13 @@ export default defineComponent({
     const onSubmit = async () => {
       const trimmedSearch = search.value.trim();
       const point = centerPoint.value;
-      const needsCenter = point !== null && (radius.value !== "" || sortBy.value === "distance");
+      const effectiveRadius = point !== null && radius.value !== "" ? radius.value : undefined;
+      const effectiveSortBy: TSortBy = point !== null ? sortBy.value : "street";
 
       const filters = {
         search: trimmedSearch || undefined,
-        radius: radius.value === "" ? undefined : radius.value,
-        sortBy: sortBy.value,
+        radius: effectiveRadius,
+        sortBy: effectiveSortBy,
         sortDir: sortDir.value,
       };
       useStationStore.getState().setFilters(filters);
@@ -189,8 +191,8 @@ export default defineComponent({
       try {
         const resp = await useStationsController({
           ...filters,
-          lat: needsCenter && point ? point.lat : undefined,
-          lon: needsCenter && point ? point.lon : undefined,
+          lat: point?.lat,
+          lon: point?.lon,
         });
 
         if (!resp?.success) {

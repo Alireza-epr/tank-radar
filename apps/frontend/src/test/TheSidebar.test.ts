@@ -70,7 +70,28 @@ describe("Sidebar", () => {
     expect(useMapStore.getState().isPickingCenter).toBe(false);
   });
 
-  it("only_sends_a_center_point_when_one_has_been_picked_and_radius_or_distance_sort_is_selected", async () => {
+  it("ignores_a_persisted_radius_or_distance_sort_left_over_without_a_center_point", async () => {
+    // Regression test: a stale "radius" (or "sortBy: distance") can survive
+    // in localStorage from before a center point was picked, or from an
+    // older version of the filter shape. It must never reach the API
+    // without lat/lon, which the backend rejects outright.
+    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
+    useStationStore.setState({ stations: [], filters: { radius: 5, sortBy: "distance", sortDir: "asc" } });
+
+    const wrapper = mount(Sidebar);
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    const params = mockedUseStationsController.mock.calls[0]?.[0];
+    expect(params?.lat).toBeUndefined();
+    expect(params?.lon).toBeUndefined();
+    expect(params?.radius).toBeUndefined();
+    expect(params?.sortBy).toBe("street");
+  });
+
+  it("sends_the_center_point_as_soon_as_one_is_picked_even_without_a_radius", async () => {
+    // A picked point always enables the backend's distance calculation for
+    // every station - radius only additionally filters which ones return.
     mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
     useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
 
@@ -79,8 +100,9 @@ describe("Sidebar", () => {
     await flushPromises();
 
     let params = mockedUseStationsController.mock.calls[0]?.[0];
-    expect(params?.lat).toBeUndefined();
-    expect(params?.lon).toBeUndefined();
+    expect(params?.lat).toBe(50.9375);
+    expect(params?.lon).toBe(6.9603);
+    expect(params?.radius).toBeUndefined();
 
     await wrapper.find("#radius").setValue("5");
     await wrapper.find("form").trigger("submit.prevent");
@@ -90,6 +112,18 @@ describe("Sidebar", () => {
     expect(params?.lat).toBe(50.9375);
     expect(params?.lon).toBe(6.9603);
     expect(params?.radius).toBe(5);
+  });
+
+  it("never_sends_a_center_point_without_one_having_been_picked", async () => {
+    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
+
+    const wrapper = mount(Sidebar);
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    const params = mockedUseStationsController.mock.calls[0]?.[0];
+    expect(params?.lat).toBeUndefined();
+    expect(params?.lon).toBeUndefined();
   });
 
   it("clearing_the_center_point_resets_radius_and_a_distance_sort", async () => {

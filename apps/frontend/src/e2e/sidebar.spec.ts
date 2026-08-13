@@ -83,6 +83,22 @@ test.describe("Sidebar", () => {
     );
   });
 
+  test("picking_a_location_shows_real_distances_even_without_a_radius_filter", async ({ page }) => {
+    // A picked point alone (no radius) should still make the backend
+    // compute and return a real distance for every station.
+    await page.getByRole("button", { name: "Pick Location on Map" }).click();
+    await page.locator(".map-wrapper").click({ position: MAP_CLICK_POSITION });
+    await expect(page.locator(".sidebar_center-point")).toBeVisible();
+    await expect(page.locator("#radius")).toHaveValue("");
+
+    await page.getByRole("button", { name: GET_STATIONS_BUTTON }).click();
+
+    const distanceCell = page.locator(".footer_table tbody tr td:nth-child(3)").first();
+    await expect(distanceCell).toBeVisible({ timeout: 15_000 });
+    await expect(distanceCell).not.toHaveText("—");
+    await expect(distanceCell).toContainText("km");
+  });
+
   test("clearing_the_picked_point_disables_the_radius_filter_again", async ({ page }) => {
     await page.getByRole("button", { name: "Pick Location on Map" }).click();
     await page.locator(".map-wrapper").click({ position: MAP_CLICK_POSITION });
