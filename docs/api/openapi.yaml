@@ -1,0 +1,357 @@
+openapi: 3.0.3
+
+info:
+  title: Tank Radar API
+  version: 1.0.0
+  description: >
+    Tank Radar API serves Cologne gas station locations synced from the Stadt Köln
+    open data portal, with radius, search, and sort filtering. All endpoints are
+    public; there is no authentication.
+  contact:
+    name: Tank Radar
+  license:
+    name: See Stadt Köln Open Data Portal terms
+    url: https://offenedaten-koeln.de/dataset/tankstellen-koeln
+
+servers:
+  - url: http://localhost:{port}/v1/api
+    variables:
+      port:
+        default: "1370"
+
+tags:
+  - name: Health
+  - name: Sync
+  - name: Stations
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      description: >
+        Verifies that the API service is running and reachable. Does not check
+        database or upstream data-source connectivity.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /sync:
+    post:
+      tags: [Sync]
+      summary: Trigger an on-demand station sync
+      description: >
+        Fetches the current station list from the Stadt Köln ArcGIS FeatureServer,
+        upserts changed/new stations, and deactivates stations no longer present
+        in the source (soft-delete via `is_active`). Runs synchronously and
+        returns once the sync finishes; also runs automatically on the schedule
+        configured by `SYNC_CRON_SCHEDULE`.
+      operationId: triggerSync
+      responses:
+        "200":
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncSuccessResponse"
+        "503":
+          description: >
+            Sync failed (source API unreachable, non-OK response, or an
+            unexpected error while upserting). The failed run is still
+            recorded in `sync_runs`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncFailureResponse"
+
+  /sync/meta:
+    get:
+      tags: [Sync]
+      summary: Get sync freshness metadata
+      description: >
+        Returns the most recent sync run (of any status) and the most recent
+        successful sync run, so a client can show data freshness. Both are
+        `null` when no sync has ever run.
+      operationId: getSyncMeta
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncMetaResponse"
+
+  /stations:
+    get:
+      tags: [Stations]
+      summary: List gas stations
+      description: >
+        Returns active gas stations, optionally filtered by search term and/or
+        radius around a center point, and sorted. See
+        [the query contract](./query-contract.md) for the full parameter rules.
+      operationId: getStations
+      parameters:
+        - name: lat
+          in: query
+          description: >
+            Latitude of the search center point, in decimal degrees (-90 to 90).
+            Must be provided together with `lon`.
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+
+        - name: lon
+          in: query
+          description: >
+            Longitude of the search center point, in decimal degrees (-180 to 180).
+            Must be provided together with `lat`.
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+
+        - name: radius
+          in: query
+          description: >
+            Maximum distance from the center point, in kilometers. Requires
+            `lat`/`lon` to also be provided.
+          schema:
+            $ref: "#/components/schemas/Radius"
+
+        - name: search
+          in: query
+          description: >
+            Case-insensitive, umlaut-folding partial match on the station's
+            street name. An empty/whitespace-only value is treated as omitted.
+          schema:
+            type: string
+
+        - name: sortBy
+          in: query
+          description: >
+            Field to sort by. `distance` requires `lat`/`lon` to also be provided.
+          schema:
+            $ref: "#/components/schemas/SortBy"
+
+        - name: sortDir
+          in: query
+          description: Sort direction. Requires `sortBy` to also be provided. Defaults to `asc`.
+          schema:
+            $ref: "#/components/schemas/SortDir"
+
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationsResponse"
+
+        "400":
+          description: Invalid or inconsistent query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+
+    Radius:
+      type: number
+      enum: [2, 5, 10]
+
+    SortBy:
+      type: string
+      enum: [street, distance]
+
+    SortDir:
+      type: string
+      enum: [asc, desc]
+
+    SyncStatus:
+      type: string
+      enum: [success, failed, running]
+
+    HealthResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+
+    Station:
+      type: object
+      required: [objectid, street, rawAddress, lat, lon]
+      properties:
+        objectid:
+          type: integer
+          description: Stable identifier from the Stadt Köln source dataset. Primary key.
+        street:
+          type: string
+          description: Street and house number, parsed from the source address.
+        rawAddress:
+          type: string
+          description: "Full source address as delivered by the city, e.g. \"Bonner Str. 98 (50677 Neustadt/Süd)\"."
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        distance:
+          type: number
+          format: double
+          description: >
+            Great-circle distance in kilometers from the `lat`/`lon` center
+            point. Present only when the request included a center point.
+
+    StationsResponse:
+      type: object
+      required: [success, entries, length]
+      properties:
+        success:
+          type: boolean
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Station"
+        length:
+          type: integer
+          description: Number of entries in this response (no pagination; always the full filtered result set).
+
+    SyncRun:
+      type: object
+      required:
+        [id, startedAt, finishedAt, status, recordsFetched, recordsUpserted, recordsDeactivated, error]
+      properties:
+        id:
+          type: integer
+        startedAt:
+          type: string
+          description: ISO 8601 timestamp.
+        finishedAt:
+          type: string
+          nullable: true
+          description: ISO 8601 timestamp; `null` while a run is still in progress.
+        status:
+          $ref: "#/components/schemas/SyncStatus"
+        recordsFetched:
+          type: integer
+        recordsUpserted:
+          type: integer
+        recordsDeactivated:
+          type: integer
+        error:
+          type: string
+          nullable: true
+
+    SyncRunResult:
+      type: object
+      required: [id, status, recordsFetched, recordsUpserted, recordsDeactivated]
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: "#/components/schemas/SyncStatus"
+        recordsFetched:
+          type: integer
+        recordsUpserted:
+          type: integer
+        recordsDeactivated:
+          type: integer
+        error:
+          type: string
+          description: Present only when `status` is `failed`.
+
+    SyncSuccessResponse:
+      type: object
+      required: [success, length, entries]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        length:
+          type: integer
+          enum: [1]
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncRunResult"
+          minItems: 1
+          maxItems: 1
+
+    SyncFailureResponse:
+      type: object
+      required: [success, error, entries]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: array
+          items:
+            type: string
+          description: Single-element array containing the failure reason.
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncRunResult"
+          minItems: 1
+          maxItems: 1
+
+    SyncMeta:
+      type: object
+      required: [latest, lastSuccess]
+      properties:
+        latest:
+          allOf:
+            - $ref: "#/components/schemas/SyncRun"
+          nullable: true
+          description: The most recent sync run of any status, or `null` if none has ever run.
+        lastSuccess:
+          allOf:
+            - $ref: "#/components/schemas/SyncRun"
+          nullable: true
+          description: The most recent successful sync run, or `null` if none has ever succeeded.
+
+    SyncMetaResponse:
+      type: object
+      required: [success, length, entries]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        length:
+          type: integer
+          enum: [1]
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncMeta"
+          minItems: 1
+          maxItems: 1
+
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: array
+          description: >
+            Two-element array: a stable error code (e.g. `VALIDATION_ERROR`)
+            followed by a human-readable message.
+          items:
+            type: string
+          example: ["VALIDATION_ERROR", "'radius' must be one of: 2, 5, 10"]
