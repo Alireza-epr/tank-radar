@@ -2,6 +2,9 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./src/e2e",
+  // No reporter is configured by default, so nothing ever gets written to
+  // disk for CI to upload - html writes playwright-report/ every run.
+  reporter: [["html", { open: "never" }]],
   webServer: [
     {
       // Header syncs against a real backend, not a mock - start it too.
