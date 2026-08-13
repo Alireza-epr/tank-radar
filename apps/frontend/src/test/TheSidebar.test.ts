@@ -1,0 +1,142 @@
+import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { mount, flushPromises } from "@vue/test-utils";
+
+jest.mock("@/controllers/stationController", () => ({
+  useStationsController: jest.fn(),
+}));
+
+import { useStationsController } from "@/controllers/stationController";
+import { useStationStore } from "@/store/stationStore";
+import { useAppStore } from "@/store/appStore";
+import { useMapStore } from "@/store/mapStore";
+import Sidebar from "@/components/TheSidebar.vue";
+
+const mockedUseStationsController = useStationsController as jest.MockedFunction<typeof useStationsController>;
+
+const STATION = { objectid: 1, street: "Ring", rawAddress: "Ring 1 (50667 Köln)", lat: 50.9, lon: 6.9 };
+
+describe("Sidebar", () => {
+  beforeEach(() => {
+    mockedUseStationsController.mockReset();
+    useStationStore.setState({ stations: [], filters: {} });
+    useAppStore.setState({ isLoading: false, error: null });
+    useMapStore.setState({ centerPoint: null, isPickingCenter: false });
+  });
+
+  it("renders_every_filter_field_and_the_submit_button", () => {
+    const wrapper = mount(Sidebar);
+
+    expect(wrapper.find("#search").exists()).toBe(true);
+    expect(wrapper.find("#radius").exists()).toBe(true);
+    expect(wrapper.find("#sortBy").exists()).toBe(true);
+    expect(wrapper.find("#sortDir").exists()).toBe(true);
+    expect(wrapper.find('button[type="submit"]').text()).toBe("Get Stations");
+  });
+
+  it("submits_the_current_filters_and_stores_the_returned_stations", async () => {
+    mockedUseStationsController.mockResolvedValue({ success: true, entries: [STATION], length: 1 });
+
+    const wrapper = mount(Sidebar);
+    await wrapper.find("#search").setValue("Ring");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    expect(mockedUseStationsController).toHaveBeenCalledWith(
+      expect.objectContaining({ search: "Ring", sortBy: "street", sortDir: "asc" }),
+    );
+    expect(useStationStore.getState().stations).toEqual([STATION]);
+    expect(useAppStore.getState().error).toBeNull();
+  });
+
+  it("disables_the_radius_select_until_a_center_point_is_picked", async () => {
+    const wrapper = mount(Sidebar);
+    expect(wrapper.find("#radius").attributes("disabled")).toBeDefined();
+
+    useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
+    await flushPromises();
+
+    expect(wrapper.find("#radius").attributes("disabled")).toBeUndefined();
+  });
+
+  it("toggles_picking_mode_via_the_pick_location_button", async () => {
+    const wrapper = mount(Sidebar);
+    const pickButton = wrapper.findAll("button").find((b) => b.text().includes("Pick Location"));
+
+    await pickButton?.trigger("click");
+    expect(useMapStore.getState().isPickingCenter).toBe(true);
+    expect(wrapper.text()).toContain("Click the map…");
+
+    await wrapper.findAll("button").find((b) => b.text().includes("Click the map"))?.trigger("click");
+    expect(useMapStore.getState().isPickingCenter).toBe(false);
+  });
+
+  it("only_sends_a_center_point_when_one_has_been_picked_and_radius_or_distance_sort_is_selected", async () => {
+    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
+    useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
+
+    const wrapper = mount(Sidebar);
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    let params = mockedUseStationsController.mock.calls[0]?.[0];
+    expect(params?.lat).toBeUndefined();
+    expect(params?.lon).toBeUndefined();
+
+    await wrapper.find("#radius").setValue("5");
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    params = mockedUseStationsController.mock.calls[1]?.[0];
+    expect(params?.lat).toBe(50.9375);
+    expect(params?.lon).toBe(6.9603);
+    expect(params?.radius).toBe(5);
+  });
+
+  it("clearing_the_center_point_resets_radius_and_a_distance_sort", async () => {
+    useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
+    const wrapper = mount(Sidebar);
+
+    await wrapper.find("#radius").setValue("5");
+    await wrapper.find("#sortBy").setValue("distance");
+
+    await wrapper.findAll("button").find((b) => b.text() === "Clear")?.trigger("click");
+    await flushPromises();
+
+    expect(useMapStore.getState().centerPoint).toBeNull();
+    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe("");
+    expect((wrapper.find("#sortBy").element as HTMLSelectElement).value).toBe("street");
+  });
+
+  it("shows_an_error_and_clears_stations_when_the_request_fails", async () => {
+    mockedUseStationsController.mockResolvedValue(undefined);
+
+    const wrapper = mount(Sidebar);
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    expect(useAppStore.getState().error).toBe("Failed to load stations.");
+    expect(useStationStore.getState().stations).toEqual([]);
+    expect(wrapper.find(".sidebar_error").exists()).toBe(true);
+  });
+
+  it("disables_the_submit_button_while_loading", async () => {
+    let resolveRequest: (a_Value: Awaited<ReturnType<typeof useStationsController>>) => void = () => {};
+    mockedUseStationsController.mockReturnValue(
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
+
+    const wrapper = mount(Sidebar);
+    const submitPromise = wrapper.find("form").trigger("submit.prevent");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeDefined();
+
+    resolveRequest({ success: true, entries: [], length: 0 });
+    await submitPromise;
+    await flushPromises();
+
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeUndefined();
+  });
+});

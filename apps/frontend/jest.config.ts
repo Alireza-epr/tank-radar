@@ -13,6 +13,7 @@ const config: Config = {
   },
   moduleNameMapper: {
     "\\.css$": "<rootDir>/src/test/styleMock.ts",
+    "\\.svg\\?raw$": "<rootDir>/src/test/svgRawMock.ts",
     "^maplibre-gl$": "<rootDir>/src/test/maplibreMock.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
   },

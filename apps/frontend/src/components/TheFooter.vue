@@ -12,7 +12,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr v-if="isLoading">
+            <td
+              colspan="5"
+              class="footer_placeholder"
+            >
+              Loading stations…
+            </td>
+          </tr>
+          <tr v-else-if="error">
+            <td
+              colspan="5"
+              class="footer_placeholder footer_placeholder--error"
+            >
+              {{ error }}
+            </td>
+          </tr>
+          <tr v-else-if="stations.length === 0">
             <td
               colspan="5"
               class="footer_placeholder"
@@ -20,6 +36,18 @@
               No stations loaded yet.
             </td>
           </tr>
+          <template v-else>
+            <tr
+              v-for="station in stations"
+              :key="station.objectid"
+            >
+              <td>{{ station.street }}</td>
+              <td>{{ station.rawAddress }}</td>
+              <td>{{ station.distance !== undefined ? `${station.distance.toFixed(2)} km` : "—" }}</td>
+              <td>{{ station.lat.toFixed(5) }}</td>
+              <td>{{ station.lon.toFixed(5) }}</td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
@@ -28,11 +56,18 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useStationStore } from "@/store/stationStore";
+import { useAppStore } from "@/store/appStore";
+import { useZustandStore } from "@/composables/useZustandStore";
 
 export default defineComponent({
   name: "TheFooter",
   setup() {
-    return {};
+    const stations = useZustandStore(useStationStore, (a_State) => a_State.stations);
+    const isLoading = useZustandStore(useAppStore, (a_State) => a_State.isLoading);
+    const error = useZustandStore(useAppStore, (a_State) => a_State.error);
+
+    return { stations, isLoading, error };
   },
 });
 </script>
@@ -65,5 +100,9 @@ export default defineComponent({
 .footer_placeholder {
   color: var(--color-text-muted);
   text-align: center;
+}
+
+.footer_placeholder--error {
+  color: var(--color-danger);
 }
 </style>

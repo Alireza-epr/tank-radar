@@ -1,4 +1,5 @@
-import { TParseStationsQueryResult, TRadius, TSortBy, TSortDir } from "@/types";
+import { TParseStationsQueryResult } from "@/types";
+import { TRadius, TSortBy, TSortDir } from "@packages/types";
 
 const VALID_RADII: TRadius[] = [2, 5, 10];
 const VALID_SORT_BY: TSortBy[] = ["street", "distance"];
