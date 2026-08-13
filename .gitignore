@@ -7,11 +7,14 @@ node_modules/
 
 # build output
 dist/
+dist-node/
 *.tsbuildinfo
 
 # sqlite data (kept as .gitkeep placeholders instead)
 apps/backend/data/*.sqlite
 apps/backend/data/*.sqlite-*
+apps/backend/data/db/*.sqlite
+apps/backend/data/db/*.sqlite-*
 apps/backend/data/pilot/*.sqlite
 apps/backend/data/pilot/*.sqlite-*
 

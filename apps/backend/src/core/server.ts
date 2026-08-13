@@ -1,7 +1,11 @@
 import { app } from "@/core/app";
 import { env } from "@/core/config";
 import { formatTimestamp } from "@packages/utils";
-import { log } from "@/utils/generalUtils";
+import { backend_log } from "@/utils/generalUtils";
+import "@/db/config";
+import { scheduleSync } from "@/sync/scheduleSync";
+
+scheduleSync();
 
 app.listen(env.port, "0.0.0.0", () => {
   if (!env.enable_console_log) {
@@ -10,5 +14,5 @@ app.listen(env.port, "0.0.0.0", () => {
     );
     console.log(`[${formatTimestamp()}] [INFO] Further logging is disabled.`);
   }
-  log(`tank-radar API running on port ${env.port}`);
+  backend_log(`tank-radar API running on port ${env.port}`);
 });
