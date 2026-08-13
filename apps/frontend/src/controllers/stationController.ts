@@ -1,4 +1,4 @@
-import apiConfig from "@/config/api.json";
+import { API_BASE_URL } from "@/config/api";
 import { frontend_log } from "@/utils/generalUtils";
 import { ELogType, ERoutes } from "@packages/enum";
 import type { IResponse, IStationResult, IStationsQueryParams } from "@packages/types";
@@ -23,7 +23,7 @@ export const useStationsController = async (
 ): Promise<IResponse<IStationResult> | undefined> => {
   try {
     const resp = await fetchWithRetry(
-      `${apiConfig.baseURL}${ERoutes.stations}${buildStationsQuery(a_Params)}`,
+      `${API_BASE_URL}${ERoutes.stations}${buildStationsQuery(a_Params)}`,
       { method: "GET" },
       5,
       200,

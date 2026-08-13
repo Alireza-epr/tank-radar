@@ -7,8 +7,13 @@ const STATION_BORDER_COLOR = "#2F2F33"; // matches the icon's own outline color
 const STATION_BADGE_COLOR = "#ffd49e";
 const STATION_BADGE_COLOR_SELECTED = "#ff9f40";
 
-export const createStationMarkerElement = (a_IsSelected = false, a_OnClick?: () => void): HTMLElement => {
+export const createStationMarkerElement = (
+  a_IsSelected = false,
+  a_OnClick?: () => void,
+  a_ObjectId?: number,
+): HTMLElement => {
   const badge = document.createElement("div");
+  if (a_ObjectId !== undefined) badge.dataset.objectid = String(a_ObjectId);
   badge.style.width = `${STATION_BADGE_SIZE}px`;
   badge.style.height = `${STATION_BADGE_SIZE}px`;
   badge.style.borderRadius = "50%";

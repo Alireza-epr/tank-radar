@@ -43,7 +43,7 @@ export default defineComponent({
             .getState()
             .setSelectedStationId((prev) => (prev === station.objectid ? null : station.objectid));
         };
-        const marker = new Marker({ element: createStationMarkerElement(isSelected, onMarkerClick) })
+        const marker = new Marker({ element: createStationMarkerElement(isSelected, onMarkerClick, station.objectid) })
           .setLngLat([station.lon, station.lat])
           .setPopup(popup)
           .addTo(map);
