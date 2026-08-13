@@ -7,11 +7,16 @@ const emitMaplibreWorker = (): Plugin => ({
   name: "emit-maplibre-gl-worker",
   apply: "build",
   generateBundle() {
-    this.emitFile({
-      type: "asset",
-      fileName: "assets/maplibre-gl-worker.mjs",
-      source: readFileSync(fileURLToPath(import.meta.resolve("maplibre-gl/dist/maplibre-gl-worker.mjs"))),
-    });
+    // maplibre-gl-worker.mjs itself imports a sibling maplibre-gl-shared.mjs
+    // (its own dist files are meant to be deployed together, unbundled) -
+    // both need to be emitted or the worker's own import 404s.
+    for (const file of ["maplibre-gl-worker.mjs", "maplibre-gl-shared.mjs"]) {
+      this.emitFile({
+        type: "asset",
+        fileName: `assets/${file}`,
+        source: readFileSync(fileURLToPath(import.meta.resolve(`maplibre-gl/dist/${file}`))),
+      });
+    }
   },
 });
 
