@@ -63,19 +63,31 @@ jobs:
         run: npm test
 
       # ----- Frontend checks -----
-      # apps/frontend hasn't been scaffolded yet (see BACKLOG.md Epic 3).
-      # Uncomment these once it exists with matching package.json scripts
-      # (and add a lint:style / e2e step too, only if that tooling is
-      # actually part of the frontend setup — this project's BACKLOG doesn't
-      # call for Playwright/stylelint the way the reference project did).
-      # - name: Run Frontend Type Check
-      #   working-directory: apps/frontend
-      #   run: npm run typecheck
-      #
-      # - name: Run Frontend Lint
-      #   working-directory: apps/frontend
-      #   run: npm run lint
-      #
-      # - name: Run Frontend Unit Tests
-      #   working-directory: apps/frontend
-      #   run: npm run test
+      - name: Run Frontend Type Check
+        working-directory: apps/frontend
+        run: npm run typecheck
+
+      - name: Run Frontend Lint
+        working-directory: apps/frontend
+        run: npm run lint
+
+      - name: Run Frontend Unit Tests
+        working-directory: apps/frontend
+        run: npm run test
+
+      - name: Install Playwright Browsers
+        working-directory: apps/frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Frontend E2E Tests
+        working-directory: apps/frontend
+        # playwright.config.ts's webServer entries start both dev server.
+        run: npm run e2e
+
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/frontend/playwright-report/
+          retention-days: 7
