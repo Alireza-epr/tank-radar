@@ -7,6 +7,10 @@ export const formatLocalDateTime = (a_Value: string | Date): string => {
   return date.toLocaleString(undefined, { dateStyle: "short", timeStyle: "medium" });
 };
 
+export const formatCoordinate = (a_Value: number, a_Decimals = 2): string => {
+  return a_Value.toFixed(a_Decimals);
+};
+
 export const deepSortObject = <T>(a_Object: T): T => {
   if (Array.isArray(a_Object)) {
     const mapped = a_Object.map(deepSortObject);

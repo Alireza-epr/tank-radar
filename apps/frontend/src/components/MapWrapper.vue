@@ -10,7 +10,7 @@ import { defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { Map, Marker, NavigationControl, Popup, type MapMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { COLOGNE_CENTER, DEFAULT_ZOOM } from "@/config/mapConfig";
-import { createCenterMarkerElement, createStationMarkerElement } from "@/config/markerIcons";
+import { createStationMarkerElement } from "@/config/markerIcons";
 import { useStationStore } from "@/store/stationStore";
 import { useMapStore } from "@/store/mapStore";
 import { useZustandStore } from "@/composables/useZustandStore";
@@ -22,6 +22,7 @@ export default defineComponent({
   setup() {
     const mapContainer = ref<HTMLDivElement | null>(null);
     const stations = useZustandStore(useStationStore, (a_State) => a_State.stations);
+    const selectedStationId = useZustandStore(useStationStore, (a_State) => a_State.selectedStationId);
     const centerPoint = useZustandStore(useMapStore, (a_State) => a_State.centerPoint);
     const isPickingCenter = useZustandStore(useMapStore, (a_State) => a_State.isPickingCenter);
     let map: Map | undefined;
@@ -36,7 +37,13 @@ export default defineComponent({
 
       for (const station of a_Stations) {
         const popup = new Popup({ offset: 20 }).setText(`${station.street} (${station.rawAddress})`);
-        const marker = new Marker({ element: createStationMarkerElement() })
+        const isSelected = station.objectid === selectedStationId.value;
+        const onMarkerClick = () => {
+          useStationStore
+            .getState()
+            .setSelectedStationId((prev) => (prev === station.objectid ? null : station.objectid));
+        };
+        const marker = new Marker({ element: createStationMarkerElement(isSelected, onMarkerClick) })
           .setLngLat([station.lon, station.lat])
           .setPopup(popup)
           .addTo(map);
@@ -50,7 +57,7 @@ export default defineComponent({
 
       if (!map || !a_Point) return;
 
-      centerMarker = new Marker({ element: createCenterMarkerElement() })
+      centerMarker = new Marker({color: "green"})
         .setLngLat([a_Point.lon, a_Point.lat])
         .addTo(map);
     };
@@ -86,6 +93,7 @@ export default defineComponent({
     });
 
     watch(stations, renderMarkers);
+    watch(selectedStationId, () => renderMarkers(stations.value));
     watch(centerPoint, renderCenterMarker);
     watch(isPickingCenter, applyPickingCursor);
 

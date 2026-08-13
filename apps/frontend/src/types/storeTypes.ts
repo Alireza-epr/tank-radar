@@ -18,6 +18,7 @@ export interface IAppStoreActions {
 export interface IStationStoreStates {
   stations: IStationResult[];
   filters: IStationsQueryParams;
+  selectedStationId: number | null;
 }
 
 export interface IStationStoreActions {
@@ -26,6 +27,11 @@ export interface IStationStoreActions {
   ) => void;
   setFilters: (
     a_Value: IStationStoreStates["filters"] | ((a_Prev: IStationStoreStates["filters"]) => IStationStoreStates["filters"]),
+  ) => void;
+  setSelectedStationId: (
+    a_Value:
+      | IStationStoreStates["selectedStationId"]
+      | ((a_Prev: IStationStoreStates["selectedStationId"]) => IStationStoreStates["selectedStationId"]),
   ) => void;
 }
 

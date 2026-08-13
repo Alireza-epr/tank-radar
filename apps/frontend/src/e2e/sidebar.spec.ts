@@ -32,6 +32,21 @@ test.describe("Sidebar", () => {
     expect(await markers.count()).toBeGreaterThan(0);
   });
 
+  test("clicking_a_marker_selects_and_highlights_its_row_in_the_footer", async ({ page }) => {
+    await page.getByRole("button", { name: GET_STATIONS_BUTTON }).click();
+    const markers = page.locator(".maplibregl-marker");
+    await expect(markers.first()).toBeVisible({ timeout: 15_000 });
+
+    await markers.first().dispatchEvent("click");
+
+    const selectedRows = page.locator(".footer_row--selected");
+    await expect(selectedRows).toHaveCount(1);
+
+    // Clicking again deselects it.
+    await markers.first().dispatchEvent("click");
+    await expect(selectedRows).toHaveCount(0);
+  });
+
   test("filtering_by_search_narrows_the_footer_results_to_matching_streets", async ({ page }) => {
     await page.getByRole("button", { name: GET_STATIONS_BUTTON }).click();
     const firstStreetCell = page.locator(".footer_table tbody tr td").first();
@@ -93,7 +108,7 @@ test.describe("Sidebar", () => {
 
     await page.getByRole("button", { name: GET_STATIONS_BUTTON }).click();
 
-    const distanceCell = page.locator(".footer_table tbody tr td:nth-child(3)").first();
+    const distanceCell = page.locator(".footer_table tbody tr td:nth-child(2)").first();
     await expect(distanceCell).toBeVisible({ timeout: 15_000 });
     await expect(distanceCell).not.toHaveText("—");
     await expect(distanceCell).toContainText("km");

@@ -19,3 +19,5 @@ apps/backend/data/pilot/*.sqlite
 apps/backend/data/pilot/*.sqlite-*
 
 coverage/
+playwright-report/
+test-results/

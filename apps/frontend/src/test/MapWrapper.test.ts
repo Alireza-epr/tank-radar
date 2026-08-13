@@ -18,7 +18,7 @@ import { useMapStore } from "@/store/mapStore";
 
 const STATION_A = { objectid: 1, street: "Ring", rawAddress: "Ring 1", lat: 50.9, lon: 6.9 };
 const STATION_B = { objectid: 2, street: "Bahnhof", rawAddress: "Bahnhof 2", lat: 50.94, lon: 6.96 };
-const RESET_STATION_STATE = { stations: [], filters: {} };
+const RESET_STATION_STATE = { stations: [], filters: {}, selectedStationId: null };
 const RESET_MAP_STATE = { centerPoint: null, isPickingCenter: false };
 
 describe("MapWrapper", () => {
@@ -96,6 +96,46 @@ describe("MapWrapper", () => {
     wrapper.unmount();
 
     expect(mockMarkerRemove).toHaveBeenCalled();
+  });
+
+  it("gives_the_selected_station's_marker_a_bolder_background_than_the_others", () => {
+    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A, STATION_B], selectedStationId: STATION_B.objectid });
+
+    wrapper = mount(MapWrapper);
+
+    const [firstCall, secondCall] = MockMarker.mock.calls as [{ element: HTMLElement }][];
+    const backgroundA = firstCall?.[0].element.style.backgroundColor;
+    const backgroundB = secondCall?.[0].element.style.backgroundColor;
+
+    expect(backgroundB).not.toBe(backgroundA);
+  });
+
+  it("replots_markers_when_the_selected_station_changes", async () => {
+    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A] });
+    wrapper = mount(MapWrapper);
+    expect(MockMarker).toHaveBeenCalledTimes(1);
+
+    useStationStore.getState().setSelectedStationId(STATION_A.objectid);
+    await flushPromises();
+
+    expect(mockMarkerRemove).toHaveBeenCalledTimes(1);
+    expect(MockMarker).toHaveBeenCalledTimes(2);
+  });
+
+  it("selects_a_station_when_its_marker_is_clicked_and_deselects_it_on_a_second_click", () => {
+    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A, STATION_B] });
+    wrapper = mount(MapWrapper);
+
+    const [firstCall] = MockMarker.mock.calls as [{ element: HTMLElement }][];
+    firstCall?.[0].element.click();
+    expect(useStationStore.getState().selectedStationId).toBe(STATION_A.objectid);
+
+    // The marker was re-rendered for the new selection - grab the fresh element.
+    const latestFirstCall = MockMarker.mock.calls[MockMarker.mock.calls.length - 2] as
+      | [{ element: HTMLElement }]
+      | undefined;
+    latestFirstCall?.[0].element.click();
+    expect(useStationStore.getState().selectedStationId).toBeNull();
   });
 
   it("ignores_map_clicks_when_not_in_picking_mode", () => {

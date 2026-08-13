@@ -4,6 +4,7 @@ import { useStationStore } from "@/store/stationStore";
 const RESET_STATE = {
   stations: [],
   filters: {},
+  selectedStationId: null,
 };
 
 describe("useStationStore", () => {
@@ -31,5 +32,13 @@ describe("useStationStore", () => {
     useStationStore.getState().setFilters({ search: "Ring", sortBy: "street", sortDir: "asc" });
 
     expect(useStationStore.getState().filters).toEqual({ search: "Ring", sortBy: "street", sortDir: "asc" });
+  });
+
+  it("sets_and_clears_the_selected_station_id", () => {
+    useStationStore.getState().setSelectedStationId(1);
+    expect(useStationStore.getState().selectedStationId).toBe(1);
+
+    useStationStore.getState().setSelectedStationId((prev) => (prev === 1 ? null : prev));
+    expect(useStationStore.getState().selectedStationId).toBeNull();
   });
 });
