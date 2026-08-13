@@ -40,7 +40,7 @@
           :disabled="isFetchingMeta" 
           @click="onSyncMeta"
         >
-          {{ isFetchingMeta ? "…" : "Get Meta" }}
+          {{ isFetchingMeta ? "Getting…" : "Get Meta" }}
         </button>
       </div>
     </div>
@@ -52,8 +52,6 @@ import { defineComponent, onMounted, ref } from "vue";
 import { useSyncController, useSyncMetaController } from "@/controllers/syncController";
 import type { ISyncMeta, ISyncRunInput } from "@packages/types";
 import { formatLocalDateTime } from "@packages/utils";
-import { frontend_log } from "@/utils/generalUtils";
-import { ELogType } from "@packages/enum";
 
 export default defineComponent({
   name: "TheHeader",
@@ -70,12 +68,13 @@ export default defineComponent({
       isFetchingMeta.value = true;
       try {
         const resp = await useSyncMetaController();
+        if(!resp) {
+          syncMeta.value = undefined
+        }
+
         if (resp?.entries) {
           syncMeta.value = resp.entries[0];
         }
-      } catch(error) {
-        syncMeta.value = undefined
-        frontend_log(error, ELogType.error)
       } finally {
         isFetchingMeta.value = false;
       }
@@ -85,14 +84,14 @@ export default defineComponent({
       isSyncing.value = true;
       try {
         const resp = await useSyncController();
+        if(!resp) {
+          sync.value = {
+            status: "failed"
+          }
+        }
         if (resp?.entries) {
           sync.value = resp.entries[0];
         }
-      } catch(error) {
-        sync.value = {
-          status: "failed"
-        }
-        frontend_log(error, ELogType.error)
       } finally {
         isSyncing.value = false;
         if(sync.value && sync.value.status !== "failed") await onSyncMeta();
