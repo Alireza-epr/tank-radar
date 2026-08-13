@@ -69,9 +69,12 @@ describe("useStationsController", () => {
   });
 
   it("logs_and_resolves_undefined_when_the_request_fails", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     mockedFetchWithRetry.mockRejectedValue(new Error("network down"));
 
     const result = await useStationsController({});
     expect(result).toBeUndefined();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(String), expect.stringContaining("network down"));
+    consoleErrorSpy.mockRestore();
   });
 });

@@ -177,7 +177,7 @@ describe("MapWrapper", () => {
     await flushPromises();
 
     expect(MockMarker).toHaveBeenCalledTimes(1);
-    expect(MockMarker).toHaveBeenCalledWith(expect.objectContaining({ element: expect.any(HTMLElement) }));
+    expect(MockMarker).toHaveBeenCalledWith({"color": "green"});
     expect(mockSetLngLat).toHaveBeenCalledWith([6.9603, 50.9375]);
 
     useMapStore.getState().setCenterPoint(null);
