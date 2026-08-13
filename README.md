@@ -99,8 +99,11 @@ dev (`NODE_ENV=development`, `ENABLE_CONSOLE_LOG=1`) - the "Default when
 unset" column above is what the app falls back to if a variable is left out
 entirely, per `apps/backend/src/utils/envUtils.ts`.
 
-The frontend has no environment variables of its own; its API base URL is set
-in `apps/frontend/src/config/api.json`.
+The frontend has one build-time environment variable, `VITE_API_BASE_URL` -
+the backend origin to call (e.g. `https://tank-radar.onrender.com` in
+production). If unset, it falls back to the local-dev default in
+`apps/frontend/src/config/api.json` (`http://127.0.0.1:1370`). Vite bakes
+this in at build time, so changing it requires a rebuild, not just a restart.
 
 ---
 ## Scripts
@@ -228,7 +231,49 @@ On every pull request into `master` that touches `apps/frontend`,
 5. Runs frontend unit tests (Jest) and end-to-end tests (Playwright),
    uploading the Playwright report as an artifact if a run fails
 
-There is no deploy step configured yet.
+Deploys are not part of this workflow - see [Deployment](#deployment) below.
+
+---
+## Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | [Vercel](https://vercel.com) | https://tank-radar-web.vercel.app |
+| Backend | [Render](https://render.com) | https://tank-radar.onrender.com |
+
+Both deploy automatically on push to `master`, via each platform's own
+GitHub integration - independent of the GitHub Actions workflow above,
+which only runs on pull requests.
+
+### Frontend (Vercel)
+
+A monorepo-aware build is required since `apps/frontend` depends on the
+`packages/*` workspaces:
+
+| Setting | Value |
+|---------|-------|
+| Root Directory | *(repo root)* |
+| Install Command | `npm install` |
+| Build Command | `npm run packages:build && npm run frontend:build` |
+| Output Directory | `apps/frontend/dist` |
+| Environment Variable | `VITE_API_BASE_URL=https://tank-radar.onrender.com` |
+
+### Backend (Render)
+
+| Setting | Value |
+|---------|-------|
+| Root Directory | *(repo root)* |
+| Build Command | `npm install --include=dev && npm run packages:build && npm run build --workspace=apps/backend` |
+| Start Command | `npm run start --workspace=apps/backend` |
+| Health Check Path | `/v1/api/health` |
+| Environment Variables | see [Environment Variables](#environment-variables); set `CORS_ORIGIN=https://tank-radar-web.vercel.app` |
+
+`--include=dev` is required in the build command: Render sets
+`NODE_ENV=production`, which makes `npm install` skip `devDependencies` -
+where the TypeScript build tooling lives - unless forced.
+
+Render's free tier spins the backend down after 15 minutes idle; the first
+request after that is slow (~30-50s cold start) while it wakes back up.
 
 ---
 ## Tech Stack
