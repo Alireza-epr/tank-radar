@@ -9,6 +9,7 @@ import { useStationsController } from "@/controllers/stationController";
 import { useStationStore } from "@/store/stationStore";
 import { useAppStore } from "@/store/appStore";
 import { useMapStore } from "@/store/mapStore";
+import { useUrlStore } from "@/store/urlStore";
 import Sidebar from "@/components/TheSidebar.vue";
 
 const mockedUseStationsController = useStationsController as jest.MockedFunction<typeof useStationsController>;
@@ -21,6 +22,7 @@ describe("Sidebar", () => {
     useStationStore.setState({ stations: [], filters: {} });
     useAppStore.setState({ isLoading: false, error: null });
     useMapStore.setState({ centerPoint: null, isPickingCenter: false });
+    useUrlStore.getState().setParams({});
   });
 
   it("renders_every_filter_field_and_the_submit_button", () => {
@@ -151,6 +153,57 @@ describe("Sidebar", () => {
     expect(useAppStore.getState().error).toBe("Failed to load stations.");
     expect(useStationStore.getState().stations).toEqual([]);
     expect(wrapper.find(".sidebar_error").exists()).toBe(true);
+  });
+
+  it("prefills_the_form_from_the_urls_query_string", () => {
+    useUrlStore.getState().setParams({ search: "Ring", sortDir: "desc", lat: "50.9375", lon: "6.9603", radius: "5" });
+
+    const wrapper = mount(Sidebar);
+
+    expect((wrapper.find("#search").element as HTMLInputElement).value).toBe("Ring");
+    expect((wrapper.find("#sortDir").element as HTMLSelectElement).value).toBe("desc");
+    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe("5");
+    expect(useMapStore.getState().centerPoint).toEqual({ lat: 50.9375, lon: 6.9603 });
+  });
+
+  it("auto_fetches_on_mount_when_the_url_carries_a_search", async () => {
+    useUrlStore.getState().setParams({ search: "Ring" });
+    mockedUseStationsController.mockResolvedValue({ success: true, entries: [STATION], length: 1 });
+
+    mount(Sidebar);
+    await flushPromises();
+
+    expect(mockedUseStationsController).toHaveBeenCalledWith(expect.objectContaining({ search: "Ring" }));
+    expect(useStationStore.getState().stations).toEqual([STATION]);
+  });
+
+  it("does_not_auto_fetch_when_the_url_has_no_query_string", async () => {
+    mount(Sidebar);
+    await flushPromises();
+
+    expect(mockedUseStationsController).not.toHaveBeenCalled();
+  });
+
+  it("writes_a_filter_change_to_the_url_immediately_without_submitting", async () => {
+    const wrapper = mount(Sidebar);
+
+    await wrapper.find("#search").setValue("Ring");
+
+    expect(mockedUseStationsController).not.toHaveBeenCalled();
+    expect(new URLSearchParams(window.location.search).get("search")).toBe("Ring");
+  });
+
+  it("writes_the_center_point_and_radius_to_the_url_as_soon_as_theyre_set", async () => {
+    const wrapper = mount(Sidebar);
+
+    useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
+    await wrapper.vm.$nextTick();
+    await wrapper.find("#radius").setValue("5");
+
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get("lat")).toBe("50.9375");
+    expect(params.get("lon")).toBe("6.9603");
+    expect(params.get("radius")).toBe("5");
   });
 
   it("disables_the_submit_button_while_loading", async () => {

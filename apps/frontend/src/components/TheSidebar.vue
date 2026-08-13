@@ -131,12 +131,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, onMounted, ref, watch } from "vue";
 import { useStationsController } from "@/controllers/stationController";
 import { useStationStore } from "@/store/stationStore";
 import { useAppStore } from "@/store/appStore";
 import { useMapStore } from "@/store/mapStore";
+import { useUrlStore } from "@/store/urlStore";
 import { useZustandStore } from "@/composables/useZustandStore";
+import { filtersToParams, parseFiltersFromParams } from "@/utils/urlFilters";
 import type { TRadius, TSortBy, TSortDir } from "@packages/types";
 
 const RADIUS_OPTIONS: TRadius[] = [2, 5, 10];
@@ -144,8 +146,14 @@ const RADIUS_OPTIONS: TRadius[] = [2, 5, 10];
 export default defineComponent({
   name: "TheSidebar",
   setup() {
-    const initialFilters = useStationStore.getState().filters;
-    const initialCenterPoint = useMapStore.getState().centerPoint;
+    const hasUrlFilters = Object.keys(useUrlStore.getState().params).length > 0;
+    const urlState = parseFiltersFromParams(useUrlStore.getState().params);
+    if (hasUrlFilters && urlState.centerPoint) {
+      useMapStore.getState().setCenterPoint(urlState.centerPoint);
+    }
+
+    const initialFilters = hasUrlFilters ? urlState.filters : useStationStore.getState().filters;
+    const initialCenterPoint = hasUrlFilters ? urlState.centerPoint : useMapStore.getState().centerPoint;
 
     const search = ref(initialFilters.search ?? "");
     const radius = ref<"" | TRadius>(initialCenterPoint ? (initialFilters.radius ?? "") : "");
@@ -162,6 +170,27 @@ export default defineComponent({
       radius.value = "";
       if (sortBy.value === "distance") sortBy.value = "street";
     });
+
+    watch(
+      [search, radius, sortBy, sortDir, centerPoint],
+      () => {
+        const point = centerPoint.value;
+        const effectiveRadius = point !== null && radius.value !== "" ? radius.value : undefined;
+        const effectiveSortBy: TSortBy = point !== null ? sortBy.value : "street";
+
+        const params = filtersToParams(
+          {
+            search: search.value.trim() || undefined,
+            radius: effectiveRadius,
+            sortBy: effectiveSortBy,
+            sortDir: sortDir.value,
+          },
+          point,
+        );
+        useUrlStore.getState().setParams(params);
+      },
+      { immediate: true },
+    );
 
     const onTogglePicking = () => {
       useMapStore.getState().setIsPickingCenter((prev) => !prev);
@@ -206,6 +235,10 @@ export default defineComponent({
         useAppStore.getState().setIsLoading(false);
       }
     };
+
+    if (hasUrlFilters) {
+      onMounted(onSubmit);
+    }
 
     return {
       search,

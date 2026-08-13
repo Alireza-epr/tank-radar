@@ -48,3 +48,13 @@ export interface IMapStoreActions {
     a_Value: IMapStoreStates["isPickingCenter"] | ((a_Prev: IMapStoreStates["isPickingCenter"]) => IMapStoreStates["isPickingCenter"]),
   ) => void;
 }
+
+export interface IUrlStoreStates {
+  params: Record<string, string>;
+}
+
+export interface IUrlStoreActions {
+  setParams: (
+    a_Value: IUrlStoreStates["params"] | ((a_Prev: IUrlStoreStates["params"]) => IUrlStoreStates["params"]),
+  ) => void;
+}
