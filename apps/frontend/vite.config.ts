@@ -1,9 +1,22 @@
+import { readFileSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 
+const emitMaplibreWorker = (): Plugin => ({
+  name: "emit-maplibre-gl-worker",
+  apply: "build",
+  generateBundle() {
+    this.emitFile({
+      type: "asset",
+      fileName: "assets/maplibre-gl-worker.mjs",
+      source: readFileSync(fileURLToPath(import.meta.resolve("maplibre-gl/dist/maplibre-gl-worker.mjs"))),
+    });
+  },
+});
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), emitMaplibreWorker()],
   server: {
     port: 5173,
   },
@@ -13,10 +26,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Vite's dep pre-bundling mishandles maplibre-gl's internal Web
-    // Worker - confirmed empirically: the worker request 404s in dev and
-    // no vector tiles ever load as a result. Excluding it lets the
-    // browser load its real ESM module graph directly instead.
     exclude: ["maplibre-gl"],
   },
 });
