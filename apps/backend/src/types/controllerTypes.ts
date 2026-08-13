@@ -1,4 +1,4 @@
-import { IStationsQueryParams } from "./stationsTypes";
+import { IStationsQueryParams } from "@packages/types";
 
 export type TParseStationsQueryResult =
   | { success: true; data: IStationsQueryParams }
