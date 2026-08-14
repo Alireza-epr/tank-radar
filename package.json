@@ -20,6 +20,7 @@
     "packages:build": "npm run build --workspace=packages/enum --workspace=packages/types --workspace=packages/utils",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm:backend:dev\" \"npm:frontend:dev\"",
     "test": "npm run backend:test && npm run frontend:test",
+    "format": "prettier --write ./**/*.{ts,js,json,md,vue}",
     "lint": "npm run backend:lint && npm run frontend:lint"
   },
   "devDependencies": {

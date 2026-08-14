@@ -4,7 +4,9 @@ import { ELogType, ERoutes } from "@packages/enum";
 import type { IResponse, ISyncMeta, ISyncRunInput } from "@packages/types";
 import { fetchWithRetry } from "@packages/utils";
 
-export const useSyncController = async (): Promise<IResponse<ISyncRunInput> | undefined> => {
+export const useSyncController = async (): Promise<
+  IResponse<ISyncRunInput> | undefined
+> => {
   try {
     const resp = await fetchWithRetry(
       `${API_BASE_URL}${ERoutes.sync}`,
@@ -21,7 +23,9 @@ export const useSyncController = async (): Promise<IResponse<ISyncRunInput> | un
   }
 };
 
-export const useSyncMetaController = async (): Promise<IResponse<ISyncMeta> | undefined> => {
+export const useSyncMetaController = async (): Promise<
+  IResponse<ISyncMeta> | undefined
+> => {
   try {
     const resp = await fetchWithRetry(
       `${API_BASE_URL}${ERoutes.syncMeta}`,

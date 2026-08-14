@@ -4,13 +4,15 @@ import { parseStationsQuery } from "@/utils/stationsUtils";
 // Small helpers so each test doesn't have to narrow result.success itself.
 const expectError = (query: Record<string, unknown>) => {
   const result = parseStationsQuery(query);
-  if (result.success) throw new Error("expected a validation error, got success");
+  if (result.success)
+    throw new Error("expected a validation error, got success");
   return result.error;
 };
 
 const expectData = (query: Record<string, unknown>) => {
   const result = parseStationsQuery(query);
-  if (!result.success) throw new Error(`expected success, got error: ${result.error}`);
+  if (!result.success)
+    throw new Error(`expected success, got error: ${result.error}`);
   return result.data;
 };
 
@@ -57,11 +59,17 @@ describe("parseStationsQuery", () => {
   });
 
   it("rejects_a_radius_value_not_in_2_5_10", () => {
-    expect(expectError({ lat: "50.9", lon: "6.9", radius: "7" })).toMatch(/radius/);
+    expect(expectError({ lat: "50.9", lon: "6.9", radius: "7" })).toMatch(
+      /radius/,
+    );
   });
 
   it.each([2, 5, 10])("accepts_radius_%i_with_lat_lon", (radius) => {
-    const data = expectData({ lat: "50.9", lon: "6.9", radius: String(radius) });
+    const data = expectData({
+      lat: "50.9",
+      lon: "6.9",
+      radius: String(radius),
+    });
     expect(data.radius).toBe(radius);
   });
 
@@ -92,7 +100,9 @@ describe("parseStationsQuery", () => {
   });
 
   it("accepts_sortBy_distance_with_lat_lon", () => {
-    expect(expectData({ lat: "50.9", lon: "6.9", sortBy: "distance" }).sortBy).toBe("distance");
+    expect(
+      expectData({ lat: "50.9", lon: "6.9", sortBy: "distance" }).sortBy,
+    ).toBe("distance");
   });
 
   it("rejects_sortDir_without_sortBy", () => {
@@ -100,7 +110,9 @@ describe("parseStationsQuery", () => {
   });
 
   it("rejects_an_invalid_sortDir_value", () => {
-    expect(expectError({ sortBy: "street", sortDir: "sideways" })).toMatch(/sortDir/);
+    expect(expectError({ sortBy: "street", sortDir: "sideways" })).toMatch(
+      /sortDir/,
+    );
   });
 
   it("accepts_a_fully_specified_valid_query", () => {

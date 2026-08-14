@@ -12,11 +12,17 @@ export const useMapStore = createStore<IMapStoreStates & IMapStoreActions>()(
       (set) => ({
         setCenterPoint: (a_Value) =>
           set((state) => ({
-            centerPoint: typeof a_Value === "function" ? a_Value(state.centerPoint) : a_Value,
+            centerPoint:
+              typeof a_Value === "function"
+                ? a_Value(state.centerPoint)
+                : a_Value,
           })),
         setIsPickingCenter: (a_Value) =>
           set((state) => ({
-            isPickingCenter: typeof a_Value === "function" ? a_Value(state.isPickingCenter) : a_Value,
+            isPickingCenter:
+              typeof a_Value === "function"
+                ? a_Value(state.isPickingCenter)
+                : a_Value,
           })),
       }),
     ),

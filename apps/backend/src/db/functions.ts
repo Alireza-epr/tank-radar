@@ -20,19 +20,27 @@ export const registerSqlFunctions = (a_Db: Database.Database) => {
   );
 
   // using JS's toLowerCase() which is Unicode-aware
-  a_Db.function("lower_unicode", { deterministic: true }, (a_Value: unknown) => {
-    return typeof a_Value === "string" ? a_Value.toLowerCase() : a_Value;
-  });
+  a_Db.function(
+    "lower_unicode",
+    { deterministic: true },
+    (a_Value: unknown) => {
+      return typeof a_Value === "string" ? a_Value.toLowerCase() : a_Value;
+    },
+  );
 
   // treats umlauts as their base letter (ä->a, ö->o, ü->u, ß->ss)
-  a_Db.function("german_sort_key", { deterministic: true }, (a_Value: unknown) => {
-    return typeof a_Value === "string"
-      ? a_Value
-          .toLowerCase()
-          .replace(/ä/g, "a")
-          .replace(/ö/g, "o")
-          .replace(/ü/g, "u")
-          .replace(/ß/g, "ss")
-      : a_Value;
-  });
+  a_Db.function(
+    "german_sort_key",
+    { deterministic: true },
+    (a_Value: unknown) => {
+      return typeof a_Value === "string"
+        ? a_Value
+            .toLowerCase()
+            .replace(/ä/g, "a")
+            .replace(/ö/g, "o")
+            .replace(/ü/g, "u")
+            .replace(/ß/g, "ss")
+        : a_Value;
+    },
+  );
 };

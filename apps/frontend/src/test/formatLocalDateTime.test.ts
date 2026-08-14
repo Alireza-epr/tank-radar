@@ -14,7 +14,10 @@ describe("formatLocalDateTime", () => {
 
   it("accepts_a_date_instance_directly", () => {
     const date = new Date(Date.UTC(2026, 0, 1, 0, 0, 0));
-    const expected = date.toLocaleString(undefined, { dateStyle: "short", timeStyle: "medium" });
+    const expected = date.toLocaleString(undefined, {
+      dateStyle: "short",
+      timeStyle: "medium",
+    });
 
     expect(formatLocalDateTime(date)).toBe(expected);
   });

@@ -5,8 +5,11 @@ process.env.DB_PATH = ":memory:";
 import { db } from "@/db/config";
 
 const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) =>
-  (db.prepare("SELECT haversine_km(?, ?, ?, ?) AS km").get(lat1, lon1, lat2, lon2) as { km: number })
-    .km;
+  (
+    db
+      .prepare("SELECT haversine_km(?, ?, ?, ?) AS km")
+      .get(lat1, lon1, lat2, lon2) as { km: number }
+  ).km;
 
 const lowerUnicode = (value: string) =>
   (db.prepare("SELECT lower_unicode(?) AS r").get(value) as { r: string }).r;
@@ -34,8 +37,18 @@ describe("haversine_km", () => {
   });
 
   it("is_symmetric_regardless_of_point_order", () => {
-    const ab = haversineKm(50.916095041454554, 6.960644911005172, 50.923288946783785, 6.979491940887355);
-    const ba = haversineKm(50.923288946783785, 6.979491940887355, 50.916095041454554, 6.960644911005172);
+    const ab = haversineKm(
+      50.916095041454554,
+      6.960644911005172,
+      50.923288946783785,
+      6.979491940887355,
+    );
+    const ba = haversineKm(
+      50.923288946783785,
+      6.979491940887355,
+      50.916095041454554,
+      6.960644911005172,
+    );
     expect(ab).toBeCloseTo(ba, 10);
   });
 });
@@ -55,7 +68,12 @@ describe("german_sort_key", () => {
   it("sorts_a_leading_umlaut_next_to_its_base_letter_not_after_z", () => {
     // Confirmed empirically: SQLite's default binary ORDER BY shoves this
     // after "Zollstockgürtel" since "Ä" > "Z" by codepoint.
-    const streets = ["Zollstockgürtel 39", "Aachener Str. 1035", "Äußere Kanalstr. 90", "Bonner Str. 98"];
+    const streets = [
+      "Zollstockgürtel 39",
+      "Aachener Str. 1035",
+      "Äußere Kanalstr. 90",
+      "Bonner Str. 98",
+    ];
     expect(sortByGermanKey(streets)).toEqual([
       "Aachener Str. 1035",
       "Äußere Kanalstr. 90",

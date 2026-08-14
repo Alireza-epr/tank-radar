@@ -4,9 +4,13 @@ const GET_STATIONS_BUTTON = /^Get Stations$|^Loading…$/;
 const SELECTED_MARKER_BACKGROUND = "rgb(255, 159, 64)";
 
 test.describe("Pilot", () => {
-  test("picks_a_point_submits_selects_a_result_and_confirms_the_marker_highlight_and_url_sync", async ({ page }) => {
+  test("picks_a_point_submits_selects_a_result_and_confirms_the_marker_highlight_and_url_sync", async ({
+    page,
+  }) => {
     await page.goto("/");
-    await expect(page.locator(".header_status")).toHaveText("success", { timeout: 15_000 });
+    await expect(page.locator(".header_status")).toHaveText("success", {
+      timeout: 15_000,
+    });
 
     // Pick a point right where the map is already centered (Köln).
     await page.getByRole("button", { name: "Pick Location on Map" }).click();
@@ -21,7 +25,10 @@ test.describe("Pilot", () => {
     await page.getByRole("button", { name: GET_STATIONS_BUTTON }).click();
 
     const rows = page.locator(".footer_table tbody tr");
-    await expect(rows.first()).not.toHaveText(/Loading stations…|No stations loaded yet\./, { timeout: 15_000 });
+    await expect(rows.first()).not.toHaveText(
+      /Loading stations…|No stations loaded yet\./,
+      { timeout: 15_000 },
+    );
     expect(await rows.count()).toBeGreaterThan(0);
 
     // Select the first result in the list.
@@ -34,7 +41,11 @@ test.describe("Pilot", () => {
       elements.map((element) => (element as HTMLElement).style.backgroundColor),
     );
     expect(markerBackgrounds.length).toBeGreaterThan(1);
-    expect(markerBackgrounds.filter((background) => background === SELECTED_MARKER_BACKGROUND)).toHaveLength(1);
+    expect(
+      markerBackgrounds.filter(
+        (background) => background === SELECTED_MARKER_BACKGROUND,
+      ),
+    ).toHaveLength(1);
 
     // The URL reflects exactly the filters that were actually applied
     const params = new URL(page.url()).searchParams;

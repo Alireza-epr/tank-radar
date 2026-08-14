@@ -5,7 +5,9 @@
         <thead>
           <tr class="footer_summary-row">
             <th colspan="4">
-              {{ stations.length }} station{{ stations.length === 1 ? "" : "s" }}
+              {{ stations.length }} station{{
+                stations.length === 1 ? "" : "s"
+              }}
             </th>
           </tr>
           <tr>
@@ -17,12 +19,7 @@
         </thead>
         <tbody>
           <tr v-if="isLoading">
-            <td
-              colspan="4"
-              class="footer_placeholder"
-            >
-              Loading stations…
-            </td>
+            <td colspan="4" class="footer_placeholder">Loading stations…</td>
           </tr>
           <tr v-else-if="error">
             <td
@@ -33,10 +30,7 @@
             </td>
           </tr>
           <tr v-else-if="stations.length === 0">
-            <td
-              colspan="4"
-              class="footer_placeholder"
-            >
+            <td colspan="4" class="footer_placeholder">
               No stations loaded yet.
             </td>
           </tr>
@@ -45,11 +39,19 @@
               v-for="station in stations"
               :key="station.objectid"
               class="footer_row"
-              :class="{ 'footer_row--selected': station.objectid === selectedStationId }"
+              :class="{
+                'footer_row--selected': station.objectid === selectedStationId,
+              }"
               @click="onSelectStation(station.objectid)"
             >
               <td>{{ station.street }}</td>
-              <td>{{ station.distance !== undefined ? `${station.distance.toFixed(2)} km` : "—" }}</td>
+              <td>
+                {{
+                  station.distance !== undefined
+                    ? `${station.distance.toFixed(2)} km`
+                    : "—"
+                }}
+              </td>
               <td>{{ formatCoordinate(station.lat) }}</td>
               <td>{{ formatCoordinate(station.lon) }}</td>
             </tr>
@@ -70,16 +72,36 @@ import { formatCoordinate } from "@packages/utils";
 export default defineComponent({
   name: "TheFooter",
   setup() {
-    const stations = useZustandStore(useStationStore, (a_State) => a_State.stations);
-    const selectedStationId = useZustandStore(useStationStore, (a_State) => a_State.selectedStationId);
-    const isLoading = useZustandStore(useAppStore, (a_State) => a_State.isLoading);
+    const stations = useZustandStore(
+      useStationStore,
+      (a_State) => a_State.stations,
+    );
+    const selectedStationId = useZustandStore(
+      useStationStore,
+      (a_State) => a_State.selectedStationId,
+    );
+    const isLoading = useZustandStore(
+      useAppStore,
+      (a_State) => a_State.isLoading,
+    );
     const error = useZustandStore(useAppStore, (a_State) => a_State.error);
 
     const onSelectStation = (a_ObjectId: number) => {
-      useStationStore.getState().setSelectedStationId((prev) => (prev === a_ObjectId ? null : a_ObjectId));
+      useStationStore
+        .getState()
+        .setSelectedStationId((prev) =>
+          prev === a_ObjectId ? null : a_ObjectId,
+        );
     };
 
-    return { stations, selectedStationId, isLoading, error, onSelectStation, formatCoordinate };
+    return {
+      stations,
+      selectedStationId,
+      isLoading,
+      error,
+      onSelectStation,
+      formatCoordinate,
+    };
   },
 });
 </script>

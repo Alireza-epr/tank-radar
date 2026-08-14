@@ -8,12 +8,14 @@ map, filter by radius, search by street, sort the results, and share the
 exact view via URL.
 
 ---
+
 ## Methods
 
 This application syncs Cologne's open gas-station dataset into a local
 SQLite database, then serves it through a small filtering/sorting API.
 
 For each sync:
+
 - The Stadt Köln ArcGIS FeatureServer/MapServer JSON endpoint is fetched.
 - Each feature is validated (`objectid`, address, coordinates); malformed
   records are skipped rather than failing the whole run.
@@ -25,6 +27,7 @@ For each sync:
 - Every run - success or failure - is recorded so freshness can be reported.
 
 For each stations query:
+
 - Only active stations are considered.
 - An optional case-insensitive, umlaut-folding search matches the street name.
 - An optional radius filter keeps stations within N km of a picked center
@@ -33,7 +36,9 @@ For each stations query:
   ascending or descending.
 
 ---
+
 ## Features
+
 - Interactive Cologne map (MapLibre GL JS) with custom station markers
 - Pick a radius search center point by clicking the map or a station's marker
 - Radius filter (2 / 5 / 10 km) around the picked center point
@@ -45,6 +50,7 @@ For each stations query:
 - Sync freshness metadata (last run, last successful run)
 
 ---
+
 ## Parameters
 
 The following parameters control data selection and filtering:
@@ -60,6 +66,7 @@ The following parameters control data selection and filtering:
 All of the above are persisted in the URL so a view can be restored via copy/paste.
 
 ---
+
 ## Quickstart
 
 ```bash
@@ -78,21 +85,22 @@ is present; to override them, copy `apps/backend/.env.example` to
 Requires Node 20+ (the repo pins `22.15.0` via `.nvmrc`).
 
 ---
+
 ## Environment Variables
 
 All backend config lives in `apps/backend/.env` (see `apps/backend/.env.example`).
 Every variable has a built-in fallback, so the backend runs with no `.env` at
 all - copy the example file only to change one of these:
 
-| Variable | Description | Default when unset |
-|----------|--------------|---------------------|
-| `PORT` | Port the Express server listens on | `1370` |
-| `NODE_ENV` | `development` or `production` | `production` |
-| `ENABLE_CONSOLE_LOG` | `1` to log to the console, `0` to stay quiet | `0` |
-| `DB_PATH` | Path to the SQLite database file | `./data/db/tank-radar.sqlite` |
-| `STATIONS_API_URL` | Stadt Köln ArcGIS FeatureServer/MapServer JSON endpoint synced from | Cologne "Tankstellen Köln" query URL |
-| `SYNC_CRON_SCHEDULE` | `node-cron` expression for the scheduled sync | `0 */12 * * *` (every 12 hours) |
-| `CORS_ORIGIN` | Origin allowed to call the API | `http://localhost:5173` |
+| Variable             | Description                                                         | Default when unset                   |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------ |
+| `PORT`               | Port the Express server listens on                                  | `1370`                               |
+| `NODE_ENV`           | `development` or `production`                                       | `production`                         |
+| `ENABLE_CONSOLE_LOG` | `1` to log to the console, `0` to stay quiet                        | `0`                                  |
+| `DB_PATH`            | Path to the SQLite database file                                    | `./data/db/tank-radar.sqlite`        |
+| `STATIONS_API_URL`   | Stadt Köln ArcGIS FeatureServer/MapServer JSON endpoint synced from | Cologne "Tankstellen Köln" query URL |
+| `SYNC_CRON_SCHEDULE` | `node-cron` expression for the scheduled sync                       | `0 */12 * * *` (every 12 hours)      |
+| `CORS_ORIGIN`        | Origin allowed to call the API                                      | `http://localhost:5173`              |
 
 The committed `.env.example` deliberately overrides two of these for local
 dev (`NODE_ENV=development`, `ENABLE_CONSOLE_LOG=1`) - the "Default when
@@ -106,28 +114,30 @@ production). If unset, it falls back to the local-dev default in
 this in at build time, so changing it requires a rebuild, not just a restart.
 
 ---
+
 ## Scripts
 
 Run from the repo root (each fans out to the relevant workspace):
 
-| Command | Description |
-|----------|--------------|
-| `npm run dev` | Start backend + frontend dev servers together |
-| `npm run packages:build` | Build the shared `packages/*` workspaces (required before first `dev`/`build`) |
-| `npm run backend:dev` | Start the backend dev server only |
-| `npm run backend:test` | Run backend unit tests (Jest) |
-| `npm run backend:lint` | Lint the backend |
-| `npm run backend:typecheck` | Type-check the backend |
-| `npm run backend:format` | Format the backend with Prettier |
-| `npm run frontend:dev` | Start the frontend dev server only |
-| `npm run frontend:build` | Build the frontend for production |
-| `npm run frontend:test` | Run frontend unit tests (Jest) |
-| `npm run frontend:e2e` | Run frontend end-to-end tests (Playwright) |
-| `npm run frontend:lint` | Lint the frontend |
-| `npm run test` | Run backend + frontend unit tests |
-| `npm run lint` | Lint backend + frontend |
+| Command                     | Description                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| `npm run dev`               | Start backend + frontend dev servers together                                  |
+| `npm run packages:build`    | Build the shared `packages/*` workspaces (required before first `dev`/`build`) |
+| `npm run backend:dev`       | Start the backend dev server only                                              |
+| `npm run backend:test`      | Run backend unit tests (Jest)                                                  |
+| `npm run backend:lint`      | Lint the backend                                                               |
+| `npm run backend:typecheck` | Type-check the backend                                                         |
+| `npm run backend:format`    | Format the backend with Prettier                                               |
+| `npm run frontend:dev`      | Start the frontend dev server only                                             |
+| `npm run frontend:build`    | Build the frontend for production                                              |
+| `npm run frontend:test`     | Run frontend unit tests (Jest)                                                 |
+| `npm run frontend:e2e`      | Run frontend end-to-end tests (Playwright)                                     |
+| `npm run frontend:lint`     | Lint the frontend                                                              |
+| `npm run test`              | Run backend + frontend unit tests                                              |
+| `npm run lint`              | Lint backend + frontend                                                        |
 
 ---
+
 ## How it Works
 
 The application follows a clear pipeline from the open-data source to the
@@ -143,6 +153,7 @@ Stadt Köln ArcGIS FeatureServer (JSON)
 → Filters and center point persisted in the URL
 
 ---
+
 ## API Documentation
 
 The backend API (health check, sync, stations) is documented in
@@ -153,6 +164,7 @@ The backend API (health check, sync, stations) is documented in
 - [`docs/api/openapi.yaml`](docs/api/openapi.yaml) - OpenAPI 3.0 spec
 
 ---
+
 ## Data Sources & Licenses
 
 This project uses open data and open-source libraries:
@@ -170,6 +182,7 @@ Station data is re-fetched from the source on each sync; no long-term
 redistribution of the dataset is intended beyond the local sync database.
 
 ---
+
 ## Limitations
 
 - Radius/sort distance is great-circle (haversine), not road-network routing
@@ -186,6 +199,7 @@ redistribution of the dataset is intended beyond the local sync database.
   `GET /v1/api/sync/meta` to see whether the latest run actually succeeded.
 
 ---
+
 ## Folder Structure
 
 ```
@@ -219,11 +233,13 @@ redistribution of the dataset is intended beyond the local sync database.
 ```
 
 ---
+
 ## CI/CD
 
 This repository uses **GitHub Actions** (`.github/workflows/pr-checks.yml`).
 On every pull request into `master` that touches `apps/frontend`,
 `apps/backend`, or `packages`, it:
+
 1. Installs dependencies and builds the shared `packages/*` workspaces
 2. Lints and type-checks the backend and frontend
 3. Builds the backend and smoke-tests it (`GET /v1/api/health`)
@@ -234,12 +250,13 @@ On every pull request into `master` that touches `apps/frontend`,
 Deploys are not part of this workflow - see [Deployment](#deployment) below.
 
 ---
+
 ## Deployment
 
-| Service | Platform | URL |
-|---------|----------|-----|
+| Service  | Platform                     | URL                               |
+| -------- | ---------------------------- | --------------------------------- |
 | Frontend | [Vercel](https://vercel.com) | https://tank-radar-web.vercel.app |
-| Backend | [Render](https://render.com) | https://tank-radar.onrender.com |
+| Backend  | [Render](https://render.com) | https://tank-radar.onrender.com   |
 
 Both deploy automatically on push to `master`, via each platform's own
 GitHub integration - independent of the GitHub Actions workflow above,
@@ -250,22 +267,22 @@ which only runs on pull requests.
 A monorepo-aware build is required since `apps/frontend` depends on the
 `packages/*` workspaces:
 
-| Setting | Value |
-|---------|-------|
-| Root Directory | *(repo root)* |
-| Install Command | `npm install` |
-| Build Command | `npm run packages:build && npm run frontend:build` |
-| Output Directory | `apps/frontend/dist` |
+| Setting              | Value                                               |
+| -------------------- | --------------------------------------------------- |
+| Root Directory       | _(repo root)_                                       |
+| Install Command      | `npm install`                                       |
+| Build Command        | `npm run packages:build && npm run frontend:build`  |
+| Output Directory     | `apps/frontend/dist`                                |
 | Environment Variable | `VITE_API_BASE_URL=https://tank-radar.onrender.com` |
 
 ### Backend (Render)
 
-| Setting | Value |
-|---------|-------|
-| Root Directory | *(repo root)* |
-| Build Command | `npm install --include=dev && npm run packages:build && npm run build --workspace=apps/backend` |
-| Start Command | `npm run start --workspace=apps/backend` |
-| Health Check Path | `/v1/api/health` |
+| Setting               | Value                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| Root Directory        | _(repo root)_                                                                                            |
+| Build Command         | `npm install --include=dev && npm run packages:build && npm run build --workspace=apps/backend`          |
+| Start Command         | `npm run start --workspace=apps/backend`                                                                 |
+| Health Check Path     | `/v1/api/health`                                                                                         |
 | Environment Variables | see [Environment Variables](#environment-variables); set `CORS_ORIGIN=https://tank-radar-web.vercel.app` |
 
 `--include=dev` is required in the build command: Render sets
@@ -276,6 +293,7 @@ Render's free tier spins the backend down after 15 minutes idle; the first
 request after that is slow (~30-50s cold start) while it wakes back up.
 
 ---
+
 ## Tech Stack
 
 - TypeScript
@@ -289,6 +307,7 @@ request after that is slow (~30-50s cold start) while it wakes back up.
 - GitHub Actions CI
 
 ---
+
 ## Privacy Note
 
 - This app does not collect personal user data beyond what's needed to serve
@@ -297,4 +316,3 @@ request after that is slow (~30-50s cold start) while it wakes back up.
 - A picked search center point is sent to the backend only as part of the
   `/v1/api/stations` query (to compute radius/distance) and is not stored
   server-side.
-

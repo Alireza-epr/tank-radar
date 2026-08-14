@@ -19,7 +19,8 @@ export const useUrlStore = createStore<IUrlStoreStates & IUrlStoreActions>()(
     (set) => ({
       setParams: (a_Value) =>
         set((state) => {
-          const params = typeof a_Value === "function" ? a_Value(state.params) : a_Value;
+          const params =
+            typeof a_Value === "function" ? a_Value(state.params) : a_Value;
           writeParamsToLocation(params);
           return { params };
         }),

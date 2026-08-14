@@ -10,10 +10,15 @@ jest.mock("@/db/queries", () => ({
 
 import { runSync } from "@/sync/runSync";
 import { getSyncMeta } from "@/db/queries";
-import { syncController, syncMetaController } from "@/modules/sync/sync.controller";
+import {
+  syncController,
+  syncMetaController,
+} from "@/modules/sync/sync.controller";
 
 const mockedRunSync = runSync as jest.MockedFunction<typeof runSync>;
-const mockedGetSyncMeta = getSyncMeta as jest.MockedFunction<typeof getSyncMeta>;
+const mockedGetSyncMeta = getSyncMeta as jest.MockedFunction<
+  typeof getSyncMeta
+>;
 
 const createMockResponse = () => {
   const res = {} as Response;
@@ -40,7 +45,9 @@ describe("syncController", () => {
     await syncController({} as Request, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true }),
+    );
   });
 
   it("responds_503_with_the_error_when_the_sync_fails", async () => {
@@ -73,8 +80,26 @@ describe("syncMetaController", () => {
 
   it("responds_200_with_latest_and_lastSuccess", () => {
     const meta = {
-      latest: { id: 2, status: "failed" as const, startedAt: "t1", finishedAt: "t2", recordsFetched: 0, recordsUpserted: 0, recordsDeactivated: 0, error: "network down" },
-      lastSuccess: { id: 1, status: "success" as const, startedAt: "t0", finishedAt: "t0b", recordsFetched: 122, recordsUpserted: 122, recordsDeactivated: 0, error: null },
+      latest: {
+        id: 2,
+        status: "failed" as const,
+        startedAt: "t1",
+        finishedAt: "t2",
+        recordsFetched: 0,
+        recordsUpserted: 0,
+        recordsDeactivated: 0,
+        error: "network down",
+      },
+      lastSuccess: {
+        id: 1,
+        status: "success" as const,
+        startedAt: "t0",
+        finishedAt: "t0b",
+        recordsFetched: 122,
+        recordsUpserted: 122,
+        recordsDeactivated: 0,
+        error: null,
+      },
     };
     mockedGetSyncMeta.mockReturnValue(meta);
     const res = createMockResponse();
@@ -94,7 +119,9 @@ describe("syncMetaController", () => {
     syncMetaController({} as Request, res);
 
     expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ entries: [{ latest: null, lastSuccess: null }] }),
+      expect.objectContaining({
+        entries: [{ latest: null, lastSuccess: null }],
+      }),
     );
   });
 });

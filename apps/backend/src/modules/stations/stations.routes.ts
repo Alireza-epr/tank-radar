@@ -1,6 +1,6 @@
-import express from 'express';
+import express from "express";
 import { stationsController } from "./stations.controller";
-import { ERoutes } from '@packages/enum';
+import { ERoutes } from "@packages/enum";
 const router = express.Router();
 
 router.get(ERoutes.stations, stationsController);

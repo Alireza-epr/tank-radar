@@ -3,7 +3,10 @@ import { filtersToParams, parseFiltersFromParams } from "@/utils/urlFilters";
 
 describe("parseFiltersFromParams", () => {
   it("reads_search_sort_and_direction", () => {
-    const { filters, centerPoint } = parseFiltersFromParams({ search: "Ring", sortDir: "desc" });
+    const { filters, centerPoint } = parseFiltersFromParams({
+      search: "Ring",
+      sortDir: "desc",
+    });
 
     expect(filters.search).toBe("Ring");
     expect(filters.sortDir).toBe("desc");
@@ -24,7 +27,10 @@ describe("parseFiltersFromParams", () => {
   });
 
   it("ignores_radius_and_a_distance_sort_without_a_center_point", () => {
-    const { filters, centerPoint } = parseFiltersFromParams({ radius: "5", sortBy: "distance" });
+    const { filters, centerPoint } = parseFiltersFromParams({
+      radius: "5",
+      sortBy: "distance",
+    });
 
     expect(centerPoint).toBeNull();
     expect(filters.radius).toBeUndefined();
@@ -48,7 +54,12 @@ describe("parseFiltersFromParams", () => {
   it("defaults_to_no_filters_for_an_empty_param_set", () => {
     const { filters, centerPoint } = parseFiltersFromParams({});
 
-    expect(filters).toEqual({ search: undefined, radius: undefined, sortBy: "street", sortDir: "asc" });
+    expect(filters).toEqual({
+      search: undefined,
+      radius: undefined,
+      sortBy: "street",
+      sortDir: "asc",
+    });
     expect(centerPoint).toBeNull();
   });
 });
@@ -74,7 +85,10 @@ describe("filtersToParams", () => {
   });
 
   it("omits_radius_and_sort_by_when_there_is_no_center_point", () => {
-    const params = filtersToParams({ radius: 5, sortBy: "distance", sortDir: "asc" }, null);
+    const params = filtersToParams(
+      { radius: 5, sortBy: "distance", sortDir: "asc" },
+      null,
+    );
 
     expect(params.lat).toBeUndefined();
     expect(params.radius).toBeUndefined();
@@ -82,7 +96,12 @@ describe("filtersToParams", () => {
   });
 
   it("round_trips_through_parse_and_write", () => {
-    const filters = { search: "Ring", radius: 10 as const, sortBy: "distance" as const, sortDir: "desc" as const };
+    const filters = {
+      search: "Ring",
+      radius: 10 as const,
+      sortBy: "distance" as const,
+      sortDir: "desc" as const,
+    };
     const centerPoint = { lat: 50.9375, lon: 6.9603 };
 
     const params = filtersToParams(filters, centerPoint);

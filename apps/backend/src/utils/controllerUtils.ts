@@ -1,7 +1,7 @@
-import { Response } from 'express';
-import {deepSortObject} from "@packages/utils";
-import { IResponse } from '@packages/types';
-import { TStatusCode } from '@packages/types';
+import { Response } from "express";
+import { deepSortObject } from "@packages/utils";
+import { IResponse } from "@packages/types";
+import { TStatusCode } from "@packages/types";
 
 export const controllerResponse = <T>(
   a_Res: Response,

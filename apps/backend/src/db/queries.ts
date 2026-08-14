@@ -40,25 +40,33 @@ const deactivateMissingStationsStatement = db.prepare(`
 `);
 
 // All rows commit as one atomic unit instead of one write per station.
-const upsertStationsTransaction = db.transaction((a_Stations: IStation[], a_Now: string) => {
-  for (const station of a_Stations) {
-    upsertStationStatement.run({
-      objectid: station.attributes.objectid,
-      street: parseStreetFromAddress(station.attributes.adresse),
-      rawAddress: station.attributes.adresse,
-      // geometry.y is latitude, geometry.x is longitude.
-      lat: station.geometry.y,
-      lon: station.geometry.x,
-      now: a_Now,
+const upsertStationsTransaction = db.transaction(
+  (a_Stations: IStation[], a_Now: string) => {
+    for (const station of a_Stations) {
+      upsertStationStatement.run({
+        objectid: station.attributes.objectid,
+        street: parseStreetFromAddress(station.attributes.adresse),
+        rawAddress: station.attributes.adresse,
+        // geometry.y is latitude, geometry.x is longitude.
+        lat: station.geometry.y,
+        lon: station.geometry.x,
+        now: a_Now,
+      });
+    }
+
+    const objectidsJson = JSON.stringify(
+      a_Stations.map((s) => s.attributes.objectid),
+    );
+    const { changes } = deactivateMissingStationsStatement.run({
+      objectidsJson,
     });
-  }
+    return { deactivated: changes };
+  },
+);
 
-  const objectidsJson = JSON.stringify(a_Stations.map((s) => s.attributes.objectid));
-  const { changes } = deactivateMissingStationsStatement.run({ objectidsJson });
-  return { deactivated: changes };
-});
-
-export const upsertStations = (a_Stations: IStation[]): IUpsertStationsResult => {
+export const upsertStations = (
+  a_Stations: IStation[],
+): IUpsertStationsResult => {
   const validStations: IStation[] = [];
 
   for (const station of a_Stations) {
@@ -72,8 +80,15 @@ export const upsertStations = (a_Stations: IStation[]): IUpsertStationsResult =>
     }
   }
 
-  const { deactivated } = upsertStationsTransaction(validStations, formatTimestamp());
-  return { upserted: validStations.length, skipped: a_Stations.length - validStations.length, deactivated };
+  const { deactivated } = upsertStationsTransaction(
+    validStations,
+    formatTimestamp(),
+  );
+  return {
+    upserted: validStations.length,
+    skipped: a_Stations.length - validStations.length,
+    deactivated,
+  };
 };
 
 /* 
@@ -98,7 +113,9 @@ const completeSyncRunStatement = db.prepare(`
 // Inserts a "running" row and returns its id, so the caller can update the
 // same row once the sync finishes (or fails).
 export const startSyncRun = (): number => {
-  const { lastInsertRowid } = insertSyncRunStatement.run({ startedAt: formatTimestamp() });
+  const { lastInsertRowid } = insertSyncRunStatement.run({
+    startedAt: formatTimestamp(),
+  });
   return Number(lastInsertRowid);
 };
 
@@ -144,8 +161,10 @@ const getLastSuccessfulSyncRunStatement = db.prepare(`
 `);
 
 export const getSyncMeta = (): ISyncMeta => {
-  const latest = (getLatestSyncRunStatement.get() as ISyncRun | undefined) ?? null;
-  const lastSuccess = (getLastSuccessfulSyncRunStatement.get() as ISyncRun | undefined) ?? null;
+  const latest =
+    (getLatestSyncRunStatement.get() as ISyncRun | undefined) ?? null;
+  const lastSuccess =
+    (getLastSuccessfulSyncRunStatement.get() as ISyncRun | undefined) ?? null;
   return { latest, lastSuccess };
 };
 
@@ -155,12 +174,16 @@ export const getSyncMeta = (): ISyncMeta => {
 
 const DISTANCE_EXPRESSION = "haversine_km(@lat, @lon, lat, lon)";
 
-export const getStations = (a_Params: IStationsQueryParams): IStationResult[] => {
+export const getStations = (
+  a_Params: IStationsQueryParams,
+): IStationResult[] => {
   const hasCenter = a_Params.lat !== undefined && a_Params.lon !== undefined;
 
   const whereClauses = ["is_active = 1"];
   if (a_Params.search !== undefined) {
-    whereClauses.push("lower_unicode(street) LIKE lower_unicode('%' || @search || '%')");
+    whereClauses.push(
+      "lower_unicode(street) LIKE lower_unicode('%' || @search || '%')",
+    );
   }
   if (a_Params.radius !== undefined) {
     whereClauses.push(`${DISTANCE_EXPRESSION} <= @radius`);
