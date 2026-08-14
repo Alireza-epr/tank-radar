@@ -14,9 +14,10 @@ export const Map = jest.fn().mockImplementation(() => ({
 }));
 
 export const triggerMapClick = (a_LngLat: { lat: number; lng: number }) => {
-  const clickCall = mockOn.mock.calls.find((a_Call) => a_Call[0] === "click") as
-    | [string, (e: { lngLat: { lat: number; lng: number } }) => void]
-    | undefined;
+  const clickCall = mockOn.mock.calls.find(
+    (a_Call) => a_Call[0] === "click",
+  ) as
+    [string, (e: { lngLat: { lat: number; lng: number } }) => void] | undefined;
   clickCall?.[1]({ lngLat: a_LngLat });
 };
 

@@ -4,12 +4,29 @@ import Footer from "@/components/TheFooter.vue";
 import { useStationStore } from "@/store/stationStore";
 import { useAppStore } from "@/store/appStore";
 
-const STATION = { objectid: 1, street: "Ring", rawAddress: "Ring 1 (50667 Köln)", lat: 50.9375, lon: 6.9603, distance: 1.234 };
-const STATION_B = { objectid: 2, street: "Bahnhof", rawAddress: "Bahnhof 2 (50667 Köln)", lat: 50.94, lon: 6.96 };
+const STATION = {
+  objectid: 1,
+  street: "Ring",
+  rawAddress: "Ring 1 (50667 Köln)",
+  lat: 50.9375,
+  lon: 6.9603,
+  distance: 1.234,
+};
+const STATION_B = {
+  objectid: 2,
+  street: "Bahnhof",
+  rawAddress: "Bahnhof 2 (50667 Köln)",
+  lat: 50.94,
+  lon: 6.96,
+};
 
 describe("Footer", () => {
   beforeEach(() => {
-    useStationStore.setState({ stations: [], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [],
+      filters: {},
+      selectedStationId: null,
+    });
     useAppStore.setState({ isLoading: false, error: null });
   });
 
@@ -25,20 +42,31 @@ describe("Footer", () => {
   });
 
   it("shows_the_error_message_when_the_last_request_failed", () => {
-    useAppStore.setState({ isLoading: false, error: "Failed to load stations." });
+    useAppStore.setState({
+      isLoading: false,
+      error: "Failed to load stations.",
+    });
     const wrapper = mount(Footer);
     expect(wrapper.text()).toContain("Failed to load stations.");
   });
 
   it("shows_how_many_stations_were_received", () => {
-    useStationStore.setState({ stations: [STATION, STATION_B], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [STATION, STATION_B],
+      filters: {},
+      selectedStationId: null,
+    });
     const wrapper = mount(Footer);
 
     expect(wrapper.text()).toContain("2 stations");
   });
 
   it("uses_the_singular_form_for_exactly_one_station", () => {
-    useStationStore.setState({ stations: [STATION], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [STATION],
+      filters: {},
+      selectedStationId: null,
+    });
     const wrapper = mount(Footer);
 
     expect(wrapper.text()).toContain("1 station");
@@ -46,7 +74,11 @@ describe("Footer", () => {
   });
 
   it("lists_every_station_from_the_store_with_its_distance_but_not_its_address", () => {
-    useStationStore.setState({ stations: [STATION], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [STATION],
+      filters: {},
+      selectedStationId: null,
+    });
     const wrapper = mount(Footer);
 
     const row = wrapper.find("tbody tr");
@@ -61,14 +93,22 @@ describe("Footer", () => {
   it("shows_a_dash_for_distance_when_no_center_point_was_used", () => {
     const { distance, ...stationWithoutDistance } = STATION;
     void distance;
-    useStationStore.setState({ stations: [stationWithoutDistance], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [stationWithoutDistance],
+      filters: {},
+      selectedStationId: null,
+    });
     const wrapper = mount(Footer);
 
     expect(wrapper.find("tbody tr").text()).toContain("—");
   });
 
   it("selects_a_station_on_row_click_and_deselects_it_on_a_second_click", async () => {
-    useStationStore.setState({ stations: [STATION, STATION_B], filters: {}, selectedStationId: null });
+    useStationStore.setState({
+      stations: [STATION, STATION_B],
+      filters: {},
+      selectedStationId: null,
+    });
     const wrapper = mount(Footer);
 
     const rows = wrapper.findAll("tbody tr");
@@ -82,12 +122,18 @@ describe("Footer", () => {
   });
 
   it("selecting_a_different_station_moves_the_selection", async () => {
-    useStationStore.setState({ stations: [STATION, STATION_B], filters: {}, selectedStationId: STATION.objectid });
+    useStationStore.setState({
+      stations: [STATION, STATION_B],
+      filters: {},
+      selectedStationId: STATION.objectid,
+    });
     const wrapper = mount(Footer);
 
     const rows = wrapper.findAll("tbody tr");
     await rows[1]?.trigger("click");
 
-    expect(useStationStore.getState().selectedStationId).toBe(STATION_B.objectid);
+    expect(useStationStore.getState().selectedStationId).toBe(
+      STATION_B.objectid,
+    );
   });
 });

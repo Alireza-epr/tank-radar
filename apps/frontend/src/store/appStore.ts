@@ -11,7 +11,8 @@ export const useAppStore = createStore<IAppStoreStates & IAppStoreActions>()(
     (set) => ({
       setIsLoading: (a_Value) =>
         set((state) => ({
-          isLoading: typeof a_Value === "function" ? a_Value(state.isLoading) : a_Value,
+          isLoading:
+            typeof a_Value === "function" ? a_Value(state.isLoading) : a_Value,
         })),
       setError: (a_Value) =>
         set((state) => ({

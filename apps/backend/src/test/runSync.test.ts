@@ -17,10 +17,18 @@ import { upsertStations, startSyncRun, completeSyncRun } from "@/db/queries";
 import { runSync } from "@/sync/runSync";
 import type { IStation } from "@/types";
 
-const mockedUseStationsAPI = useStationsAPI as jest.MockedFunction<typeof useStationsAPI>;
-const mockedUpsertStations = upsertStations as jest.MockedFunction<typeof upsertStations>;
-const mockedStartSyncRun = startSyncRun as jest.MockedFunction<typeof startSyncRun>;
-const mockedCompleteSyncRun = completeSyncRun as jest.MockedFunction<typeof completeSyncRun>;
+const mockedUseStationsAPI = useStationsAPI as jest.MockedFunction<
+  typeof useStationsAPI
+>;
+const mockedUpsertStations = upsertStations as jest.MockedFunction<
+  typeof upsertStations
+>;
+const mockedStartSyncRun = startSyncRun as jest.MockedFunction<
+  typeof startSyncRun
+>;
+const mockedCompleteSyncRun = completeSyncRun as jest.MockedFunction<
+  typeof completeSyncRun
+>;
 
 const sampleStations: IStation[] = [
   {
@@ -40,7 +48,11 @@ describe("runSync", () => {
 
   it("returns_a_success_result_and_completes_the_run_when_fetch_and_upsert_succeed", async () => {
     mockedUseStationsAPI.mockResolvedValue(sampleStations);
-    mockedUpsertStations.mockReturnValue({ upserted: 1, skipped: 0, deactivated: 0 });
+    mockedUpsertStations.mockReturnValue({
+      upserted: 1,
+      skipped: 0,
+      deactivated: 0,
+    });
 
     const result = await runSync();
 

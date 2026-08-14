@@ -14,7 +14,9 @@ const emitMaplibreWorker = (): Plugin => ({
       this.emitFile({
         type: "asset",
         fileName: `assets/${file}`,
-        source: readFileSync(fileURLToPath(import.meta.resolve(`maplibre-gl/dist/${file}`))),
+        source: readFileSync(
+          fileURLToPath(import.meta.resolve(`maplibre-gl/dist/${file}`)),
+        ),
       });
     }
   },

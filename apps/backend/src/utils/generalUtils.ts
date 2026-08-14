@@ -17,5 +17,4 @@ export const backend_log = (
   if (env.enable_console_log) {
     console.log(formattedMessage);
   }
-
 };

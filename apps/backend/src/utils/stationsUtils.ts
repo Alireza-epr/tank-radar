@@ -5,9 +5,10 @@ const VALID_RADII: TRadius[] = [2, 5, 10];
 const VALID_SORT_BY: TSortBy[] = ["street", "distance"];
 const VALID_SORT_DIR: TSortDir[] = ["asc", "desc"];
 
-
 // Validates and normalizes raw Express query
-export const parseStationsQuery = (a_Query: Record<string, unknown>): TParseStationsQueryResult => {
+export const parseStationsQuery = (
+  a_Query: Record<string, unknown>,
+): TParseStationsQueryResult => {
   const rawLat = a_Query.lat;
   const rawLon = a_Query.lon;
   const rawRadius = a_Query.radius;
@@ -19,7 +20,10 @@ export const parseStationsQuery = (a_Query: Record<string, unknown>): TParseStat
   const hasLon = rawLon !== undefined;
 
   if (hasLat !== hasLon) {
-    return { success: false, error: "'lat' and 'lon' must be provided together" };
+    return {
+      success: false,
+      error: "'lat' and 'lon' must be provided together",
+    };
   }
 
   let lat: number | undefined;
@@ -30,17 +34,26 @@ export const parseStationsQuery = (a_Query: Record<string, unknown>): TParseStat
     lon = Number(rawLon);
 
     if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
-      return { success: false, error: "'lat' must be a number between -90 and 90" };
+      return {
+        success: false,
+        error: "'lat' must be a number between -90 and 90",
+      };
     }
     if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
-      return { success: false, error: "'lon' must be a number between -180 and 180" };
+      return {
+        success: false,
+        error: "'lon' must be a number between -180 and 180",
+      };
     }
   }
 
   let radius: TRadius | undefined;
   if (rawRadius !== undefined) {
     if (lat === undefined) {
-      return { success: false, error: "'radius' requires 'lat' and 'lon' to also be provided" };
+      return {
+        success: false,
+        error: "'radius' requires 'lat' and 'lon' to also be provided",
+      };
     }
     const parsedRadius = Number(rawRadius);
     if (!VALID_RADII.includes(parsedRadius as TRadius)) {
@@ -60,11 +73,20 @@ export const parseStationsQuery = (a_Query: Record<string, unknown>): TParseStat
 
   let sortBy: TSortBy | undefined;
   if (rawSortBy !== undefined) {
-    if (typeof rawSortBy !== "string" || !VALID_SORT_BY.includes(rawSortBy as TSortBy)) {
-      return { success: false, error: "'sortBy' must be one of: street, distance" };
+    if (
+      typeof rawSortBy !== "string" ||
+      !VALID_SORT_BY.includes(rawSortBy as TSortBy)
+    ) {
+      return {
+        success: false,
+        error: "'sortBy' must be one of: street, distance",
+      };
     }
     if (rawSortBy === "distance" && lat === undefined) {
-      return { success: false, error: "'sortBy=distance' requires 'lat' and 'lon' to also be provided" };
+      return {
+        success: false,
+        error: "'sortBy=distance' requires 'lat' and 'lon' to also be provided",
+      };
     }
     sortBy = rawSortBy as TSortBy;
   }
@@ -72,9 +94,15 @@ export const parseStationsQuery = (a_Query: Record<string, unknown>): TParseStat
   let sortDir: TSortDir = "asc";
   if (rawSortDir !== undefined) {
     if (sortBy === undefined) {
-      return { success: false, error: "'sortDir' requires 'sortBy' to also be provided" };
+      return {
+        success: false,
+        error: "'sortDir' requires 'sortBy' to also be provided",
+      };
     }
-    if (typeof rawSortDir !== "string" || !VALID_SORT_DIR.includes(rawSortDir as TSortDir)) {
+    if (
+      typeof rawSortDir !== "string" ||
+      !VALID_SORT_DIR.includes(rawSortDir as TSortDir)
+    ) {
       return { success: false, error: "'sortDir' must be one of: asc, desc" };
     }
     sortDir = rawSortDir as TSortDir;

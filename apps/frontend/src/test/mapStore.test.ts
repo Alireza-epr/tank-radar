@@ -14,7 +14,10 @@ describe("useMapStore", () => {
   it("sets_the_center_point_directly", () => {
     useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
 
-    expect(useMapStore.getState().centerPoint).toEqual({ lat: 50.9375, lon: 6.9603 });
+    expect(useMapStore.getState().centerPoint).toEqual({
+      lat: 50.9375,
+      lon: 6.9603,
+    });
   });
 
   it("toggles_picking_mode_via_a_functional_update", () => {

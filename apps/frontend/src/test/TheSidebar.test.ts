@@ -12,9 +12,16 @@ import { useMapStore } from "@/store/mapStore";
 import { useUrlStore } from "@/store/urlStore";
 import Sidebar from "@/components/TheSidebar.vue";
 
-const mockedUseStationsController = useStationsController as jest.MockedFunction<typeof useStationsController>;
+const mockedUseStationsController =
+  useStationsController as jest.MockedFunction<typeof useStationsController>;
 
-const STATION = { objectid: 1, street: "Ring", rawAddress: "Ring 1 (50667 Köln)", lat: 50.9, lon: 6.9 };
+const STATION = {
+  objectid: 1,
+  street: "Ring",
+  rawAddress: "Ring 1 (50667 Köln)",
+  lat: 50.9,
+  lon: 6.9,
+};
 
 describe("Sidebar", () => {
   beforeEach(() => {
@@ -36,7 +43,11 @@ describe("Sidebar", () => {
   });
 
   it("submits_the_current_filters_and_stores_the_returned_stations", async () => {
-    mockedUseStationsController.mockResolvedValue({ success: true, entries: [STATION], length: 1 });
+    mockedUseStationsController.mockResolvedValue({
+      success: true,
+      entries: [STATION],
+      length: 1,
+    });
 
     const wrapper = mount(Sidebar);
     await wrapper.find("#search").setValue("Ring");
@@ -44,7 +55,11 @@ describe("Sidebar", () => {
     await flushPromises();
 
     expect(mockedUseStationsController).toHaveBeenCalledWith(
-      expect.objectContaining({ search: "Ring", sortBy: "street", sortDir: "asc" }),
+      expect.objectContaining({
+        search: "Ring",
+        sortBy: "street",
+        sortDir: "asc",
+      }),
     );
     expect(useStationStore.getState().stations).toEqual([STATION]);
     expect(useAppStore.getState().error).toBeNull();
@@ -62,13 +77,18 @@ describe("Sidebar", () => {
 
   it("toggles_picking_mode_via_the_pick_location_button", async () => {
     const wrapper = mount(Sidebar);
-    const pickButton = wrapper.findAll("button").find((b) => b.text().includes("Pick Location"));
+    const pickButton = wrapper
+      .findAll("button")
+      .find((b) => b.text().includes("Pick Location"));
 
     await pickButton?.trigger("click");
     expect(useMapStore.getState().isPickingCenter).toBe(true);
     expect(wrapper.text()).toContain("Click the map…");
 
-    await wrapper.findAll("button").find((b) => b.text().includes("Click the map"))?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text().includes("Click the map"))
+      ?.trigger("click");
     expect(useMapStore.getState().isPickingCenter).toBe(false);
   });
 
@@ -77,8 +97,15 @@ describe("Sidebar", () => {
     // in localStorage from before a center point was picked, or from an
     // older version of the filter shape. It must never reach the API
     // without lat/lon, which the backend rejects outright.
-    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
-    useStationStore.setState({ stations: [], filters: { radius: 5, sortBy: "distance", sortDir: "asc" } });
+    mockedUseStationsController.mockResolvedValue({
+      success: true,
+      entries: [],
+      length: 0,
+    });
+    useStationStore.setState({
+      stations: [],
+      filters: { radius: 5, sortBy: "distance", sortDir: "asc" },
+    });
 
     const wrapper = mount(Sidebar);
     await wrapper.find("form").trigger("submit.prevent");
@@ -94,7 +121,11 @@ describe("Sidebar", () => {
   it("sends_the_center_point_as_soon_as_one_is_picked_even_without_a_radius", async () => {
     // A picked point always enables the backend's distance calculation for
     // every station - radius only additionally filters which ones return.
-    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
+    mockedUseStationsController.mockResolvedValue({
+      success: true,
+      entries: [],
+      length: 0,
+    });
     useMapStore.getState().setCenterPoint({ lat: 50.9375, lon: 6.9603 });
 
     const wrapper = mount(Sidebar);
@@ -117,7 +148,11 @@ describe("Sidebar", () => {
   });
 
   it("never_sends_a_center_point_without_one_having_been_picked", async () => {
-    mockedUseStationsController.mockResolvedValue({ success: true, entries: [], length: 0 });
+    mockedUseStationsController.mockResolvedValue({
+      success: true,
+      entries: [],
+      length: 0,
+    });
 
     const wrapper = mount(Sidebar);
     await wrapper.find("form").trigger("submit.prevent");
@@ -135,12 +170,19 @@ describe("Sidebar", () => {
     await wrapper.find("#radius").setValue("5");
     await wrapper.find("#sortBy").setValue("distance");
 
-    await wrapper.findAll("button").find((b) => b.text() === "Clear")?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Clear")
+      ?.trigger("click");
     await flushPromises();
 
     expect(useMapStore.getState().centerPoint).toBeNull();
-    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe("");
-    expect((wrapper.find("#sortBy").element as HTMLSelectElement).value).toBe("street");
+    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe(
+      "",
+    );
+    expect((wrapper.find("#sortBy").element as HTMLSelectElement).value).toBe(
+      "street",
+    );
   });
 
   it("shows_an_error_and_clears_stations_when_the_request_fails", async () => {
@@ -156,24 +198,45 @@ describe("Sidebar", () => {
   });
 
   it("prefills_the_form_from_the_urls_query_string", () => {
-    useUrlStore.getState().setParams({ search: "Ring", sortDir: "desc", lat: "50.9375", lon: "6.9603", radius: "5" });
+    useUrlStore.getState().setParams({
+      search: "Ring",
+      sortDir: "desc",
+      lat: "50.9375",
+      lon: "6.9603",
+      radius: "5",
+    });
 
     const wrapper = mount(Sidebar);
 
-    expect((wrapper.find("#search").element as HTMLInputElement).value).toBe("Ring");
-    expect((wrapper.find("#sortDir").element as HTMLSelectElement).value).toBe("desc");
-    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe("5");
-    expect(useMapStore.getState().centerPoint).toEqual({ lat: 50.9375, lon: 6.9603 });
+    expect((wrapper.find("#search").element as HTMLInputElement).value).toBe(
+      "Ring",
+    );
+    expect((wrapper.find("#sortDir").element as HTMLSelectElement).value).toBe(
+      "desc",
+    );
+    expect((wrapper.find("#radius").element as HTMLSelectElement).value).toBe(
+      "5",
+    );
+    expect(useMapStore.getState().centerPoint).toEqual({
+      lat: 50.9375,
+      lon: 6.9603,
+    });
   });
 
   it("auto_fetches_on_mount_when_the_url_carries_a_search", async () => {
     useUrlStore.getState().setParams({ search: "Ring" });
-    mockedUseStationsController.mockResolvedValue({ success: true, entries: [STATION], length: 1 });
+    mockedUseStationsController.mockResolvedValue({
+      success: true,
+      entries: [STATION],
+      length: 1,
+    });
 
     mount(Sidebar);
     await flushPromises();
 
-    expect(mockedUseStationsController).toHaveBeenCalledWith(expect.objectContaining({ search: "Ring" }));
+    expect(mockedUseStationsController).toHaveBeenCalledWith(
+      expect.objectContaining({ search: "Ring" }),
+    );
     expect(useStationStore.getState().stations).toEqual([STATION]);
   });
 
@@ -190,7 +253,9 @@ describe("Sidebar", () => {
     await wrapper.find("#search").setValue("Ring");
 
     expect(mockedUseStationsController).not.toHaveBeenCalled();
-    expect(new URLSearchParams(window.location.search).get("search")).toBe("Ring");
+    expect(new URLSearchParams(window.location.search).get("search")).toBe(
+      "Ring",
+    );
   });
 
   it("writes_the_center_point_and_radius_to_the_url_as_soon_as_theyre_set", async () => {
@@ -207,7 +272,9 @@ describe("Sidebar", () => {
   });
 
   it("disables_the_submit_button_while_loading", async () => {
-    let resolveRequest: (a_Value: Awaited<ReturnType<typeof useStationsController>>) => void = () => {};
+    let resolveRequest: (
+      a_Value: Awaited<ReturnType<typeof useStationsController>>,
+    ) => void = () => {};
     mockedUseStationsController.mockReturnValue(
       new Promise((resolve) => {
         resolveRequest = resolve;
@@ -218,12 +285,16 @@ describe("Sidebar", () => {
     const submitPromise = wrapper.find("form").trigger("submit.prevent");
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeDefined();
+    expect(
+      wrapper.find('button[type="submit"]').attributes("disabled"),
+    ).toBeDefined();
 
     resolveRequest({ success: true, entries: [], length: 0 });
     await submitPromise;
     await flushPromises();
 
-    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeUndefined();
+    expect(
+      wrapper.find('button[type="submit"]').attributes("disabled"),
+    ).toBeUndefined();
   });
 });

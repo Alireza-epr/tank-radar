@@ -1,21 +1,15 @@
 <template>
   <aside class="sidebar">
-    <form
-      class="sidebar_form"
-      @submit.prevent="onSubmit"
-    >
+    <form class="sidebar_form" @submit.prevent="onSubmit">
       <div class="sidebar_field">
-        <label
-          class="sidebar_label"
-          for="search"
-        >Search street</label>
+        <label class="sidebar_label" for="search">Search street</label>
         <input
           id="search"
           v-model="search"
           type="text"
           class="sidebar_input"
           placeholder="e.g. Hauptstraße"
-        >
+        />
       </div>
 
       <div class="sidebar_field">
@@ -28,35 +22,28 @@
         >
           {{ isPickingCenter ? "Click the map…" : "Pick Location on Map" }}
         </button>
-        <div
-          v-if="centerPoint"
-          class="sidebar_center-point"
-        >
-          <span>{{ centerPoint.lat.toFixed(5) }}, {{ centerPoint.lon.toFixed(5) }}</span>
-          <button
-            type="button"
-            class="sidebar_clear"
-            @click="onClearCenter"
+        <div v-if="centerPoint" class="sidebar_center-point">
+          <span
+            >{{ centerPoint.lat.toFixed(5) }},
+            {{ centerPoint.lon.toFixed(5) }}</span
           >
+          <button type="button" class="sidebar_clear" @click="onClearCenter">
             Clear
           </button>
         </div>
       </div>
 
       <div class="sidebar_field">
-        <label
-          class="sidebar_label"
-          for="radius"
-        >Radius around picked point</label>
+        <label class="sidebar_label" for="radius"
+          >Radius around picked point</label
+        >
         <select
           id="radius"
           v-model="radius"
           class="sidebar_select"
           :disabled="!centerPoint"
         >
-          <option value="">
-            No radius filter
-          </option>
+          <option value="">No radius filter</option>
           <option
             v-for="option in RADIUS_OPTIONS"
             :key="option"
@@ -65,65 +52,32 @@
             {{ option }} km
           </option>
         </select>
-        <span
-          v-if="!centerPoint"
-          class="sidebar_hint"
-        >Pick a location on the map to enable this.</span>
+        <span v-if="!centerPoint" class="sidebar_hint"
+          >Pick a location on the map to enable this.</span
+        >
       </div>
 
       <div class="sidebar_field">
-        <label
-          class="sidebar_label"
-          for="sortBy"
-        >Sort by</label>
-        <select
-          id="sortBy"
-          v-model="sortBy"
-          class="sidebar_select"
-        >
-          <option value="street">
-            Street
-          </option>
-          <option
-            value="distance"
-            :disabled="!centerPoint"
-          >
-            Distance
-          </option>
+        <label class="sidebar_label" for="sortBy">Sort by</label>
+        <select id="sortBy" v-model="sortBy" class="sidebar_select">
+          <option value="street">Street</option>
+          <option value="distance" :disabled="!centerPoint">Distance</option>
         </select>
       </div>
 
       <div class="sidebar_field">
-        <label
-          class="sidebar_label"
-          for="sortDir"
-        >Sort direction</label>
-        <select
-          id="sortDir"
-          v-model="sortDir"
-          class="sidebar_select"
-        >
-          <option value="asc">
-            Ascending
-          </option>
-          <option value="desc">
-            Descending
-          </option>
+        <label class="sidebar_label" for="sortDir">Sort direction</label>
+        <select id="sortDir" v-model="sortDir" class="sidebar_select">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
         </select>
       </div>
 
-      <button
-        type="submit"
-        class="sidebar_button"
-        :disabled="isLoading"
-      >
+      <button type="submit" class="sidebar_button" :disabled="isLoading">
         {{ isLoading ? "Loading…" : "Get Stations" }}
       </button>
 
-      <p
-        v-if="error"
-        class="sidebar_error"
-      >
+      <p v-if="error" class="sidebar_error">
         {{ error }}
       </p>
     </form>
@@ -152,18 +106,35 @@ export default defineComponent({
       useMapStore.getState().setCenterPoint(urlState.centerPoint);
     }
 
-    const initialFilters = hasUrlFilters ? urlState.filters : useStationStore.getState().filters;
-    const initialCenterPoint = hasUrlFilters ? urlState.centerPoint : useMapStore.getState().centerPoint;
+    const initialFilters = hasUrlFilters
+      ? urlState.filters
+      : useStationStore.getState().filters;
+    const initialCenterPoint = hasUrlFilters
+      ? urlState.centerPoint
+      : useMapStore.getState().centerPoint;
 
     const search = ref(initialFilters.search ?? "");
-    const radius = ref<"" | TRadius>(initialCenterPoint ? (initialFilters.radius ?? "") : "");
-    const sortBy = ref<TSortBy>(initialCenterPoint ? (initialFilters.sortBy ?? "street") : "street");
+    const radius = ref<"" | TRadius>(
+      initialCenterPoint ? (initialFilters.radius ?? "") : "",
+    );
+    const sortBy = ref<TSortBy>(
+      initialCenterPoint ? (initialFilters.sortBy ?? "street") : "street",
+    );
     const sortDir = ref<TSortDir>(initialFilters.sortDir ?? "asc");
 
-    const isLoading = useZustandStore(useAppStore, (a_State) => a_State.isLoading);
+    const isLoading = useZustandStore(
+      useAppStore,
+      (a_State) => a_State.isLoading,
+    );
     const error = useZustandStore(useAppStore, (a_State) => a_State.error);
-    const centerPoint = useZustandStore(useMapStore, (a_State) => a_State.centerPoint);
-    const isPickingCenter = useZustandStore(useMapStore, (a_State) => a_State.isPickingCenter);
+    const centerPoint = useZustandStore(
+      useMapStore,
+      (a_State) => a_State.centerPoint,
+    );
+    const isPickingCenter = useZustandStore(
+      useMapStore,
+      (a_State) => a_State.isPickingCenter,
+    );
 
     watch(centerPoint, (a_Point) => {
       if (a_Point) return;
@@ -175,8 +146,10 @@ export default defineComponent({
       [search, radius, sortBy, sortDir, centerPoint],
       () => {
         const point = centerPoint.value;
-        const effectiveRadius = point !== null && radius.value !== "" ? radius.value : undefined;
-        const effectiveSortBy: TSortBy = point !== null ? sortBy.value : "street";
+        const effectiveRadius =
+          point !== null && radius.value !== "" ? radius.value : undefined;
+        const effectiveSortBy: TSortBy =
+          point !== null ? sortBy.value : "street";
 
         const params = filtersToParams(
           {
@@ -203,7 +176,8 @@ export default defineComponent({
     const onSubmit = async () => {
       const trimmedSearch = search.value.trim();
       const point = centerPoint.value;
-      const effectiveRadius = point !== null && radius.value !== "" ? radius.value : undefined;
+      const effectiveRadius =
+        point !== null && radius.value !== "" ? radius.value : undefined;
       const effectiveSortBy: TSortBy = point !== null ? sortBy.value : "street";
 
       const filters = {

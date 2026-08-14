@@ -21,7 +21,10 @@ export const runSync = async (): Promise<ISyncRunInput> => {
         error: "Failed to fetch stations from source API",
       };
       completeSyncRun(result);
-      backend_log(`[runSync] Sync #${id} failed: could not fetch stations`, ELogType.error);
+      backend_log(
+        `[runSync] Sync #${id} failed: could not fetch stations`,
+        ELogType.error,
+      );
       return result;
     }
 

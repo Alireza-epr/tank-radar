@@ -1,7 +1,7 @@
-import { backend_log } from '@/utils/generalUtils';
-import { ELogType } from '@packages/enum';
-import { TLogType } from '@packages/types';
-import { Request, Response, NextFunction } from 'express';
+import { backend_log } from "@/utils/generalUtils";
+import { ELogType } from "@packages/enum";
+import { TLogType } from "@packages/types";
+import { Request, Response, NextFunction } from "express";
 
 // Middleware to log incoming requests
 export const requestLogger = (
@@ -22,7 +22,7 @@ export const responseLogger = (
   const start = Date.now();
 
   // Run after res.send
-  a_Res.on('finish', async () => {
+  a_Res.on("finish", async () => {
     const duration = Date.now() - start;
     const message = `[Response] ${a_Req.method} ${a_Req.originalUrl} ${a_Res.statusCode} ${duration}ms`;
 
@@ -37,13 +37,16 @@ export const responseLogger = (
 };
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err: Error) => {
-  backend_log(`Uncaught Exception: ${err.stack || err.message}`, ELogType.error);
+process.on("uncaughtException", (err: Error) => {
+  backend_log(
+    `Uncaught Exception: ${err.stack || err.message}`,
+    ELogType.error,
+  );
 });
 
 // Handle unhandled promise rejections
 process.on(
-  'unhandledRejection',
+  "unhandledRejection",
   (reason: unknown, promise: Promise<unknown>) => {
     backend_log(
       `Unhandled Rejection at: ${JSON.stringify(promise)} reason: ${String(reason)}`,

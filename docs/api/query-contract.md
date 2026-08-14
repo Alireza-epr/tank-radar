@@ -136,22 +136,22 @@ None.
 
 ### 3. Response
 
-| Field   | Description                            | Format  |
-| ------- | --------------------------------------- | ------- |
-| success | Request status                         | boolean |
-| length  | Always `1`                             | number  |
+| Field   | Description                              | Format  |
+| ------- | ---------------------------------------- | ------- |
+| success | Request status                           | boolean |
+| length  | Always `1`                               | number  |
 | entries | Single-element array with the run result | array   |
 
 **Entry fields:**
 
-| Field              | Description                                          | Format |
-| ------------------ | ----------------------------------------------------- | ------ |
-| id                 | `sync_runs` row id for this run                       | number |
-| status              | `success` or `failed`                                 | string |
-| recordsFetched      | Rows returned by the source API                       | number |
-| recordsUpserted     | Rows inserted or updated                               | number |
-| recordsDeactivated  | Previously-active rows not present in this fetch, soft-deleted | number |
-| error               | Failure reason (only present when `status` is `failed`) | string |
+| Field              | Description                                                    | Format |
+| ------------------ | -------------------------------------------------------------- | ------ |
+| id                 | `sync_runs` row id for this run                                | number |
+| status             | `success` or `failed`                                          | string |
+| recordsFetched     | Rows returned by the source API                                | number |
+| recordsUpserted    | Rows inserted or updated                                       | number |
+| recordsDeactivated | Previously-active rows not present in this fetch, soft-deleted | number |
+| error              | Failure reason (only present when `status` is `failed`)        | string |
 
 ---
 
@@ -240,11 +240,11 @@ None.
 
 ### 3. Response
 
-| Field   | Description                              | Format |
-| ------- | ----------------------------------------- | ------ |
-| success | Request status                           | boolean |
-| length  | Always `1`                               | number  |
-| entries | Single-element array: `{ latest, lastSuccess }` | array |
+| Field   | Description                                     | Format  |
+| ------- | ----------------------------------------------- | ------- |
+| success | Request status                                  | boolean |
+| length  | Always `1`                                      | number  |
+| entries | Single-element array: `{ latest, lastSuccess }` | array   |
 
 `latest` and `lastSuccess` are each either a full sync run object (see
 [Trigger Sync](#trigger-sync) response fields, plus `startedAt` / `finishedAt`
@@ -329,14 +329,14 @@ None expected under normal operation.
 
 ### 1. Request - URL Parameters
 
-| Parameter | Description                                                | Required | Format                     | Param Type |
-| --------- | ----------------------------------------------------------- | -------- | --------------------------- | ---------- |
-| lat       | Latitude of the search center point (-90 to 90)              | False    | number                      | query      |
-| lon       | Longitude of the search center point (-180 to 180)           | False    | number                      | query      |
-| radius    | Max distance from the center point, in km                    | False    | Enum: `2`, `5`, `10`        | query      |
-| search    | Case-insensitive, umlaut-folding partial match on street name | False    | string                      | query      |
-| sortBy    | Field to sort by                                              | False    | Enum: `street`, `distance`  | query      |
-| sortDir   | Sort direction                                                | False    | Enum: `asc`, `desc`         | query      |
+| Parameter | Description                                                   | Required | Format                     | Param Type |
+| --------- | ------------------------------------------------------------- | -------- | -------------------------- | ---------- |
+| lat       | Latitude of the search center point (-90 to 90)               | False    | number                     | query      |
+| lon       | Longitude of the search center point (-180 to 180)            | False    | number                     | query      |
+| radius    | Max distance from the center point, in km                     | False    | Enum: `2`, `5`, `10`       | query      |
+| search    | Case-insensitive, umlaut-folding partial match on street name | False    | string                     | query      |
+| sortBy    | Field to sort by                                              | False    | Enum: `street`, `distance` | query      |
+| sortDir   | Sort direction                                                | False    | Enum: `asc`, `desc`        | query      |
 
 ---
 
@@ -365,21 +365,21 @@ Rules are checked in this order; the first violated rule determines the `400` me
 
 ### 4. Response
 
-| Field   | Description                                                      | Format  |
-| ------- | ------------------------------------------------------------------ | ------- |
-| success | Request status                                                    | boolean |
-| entries | List of station records                                          | array   |
-| length  | Number of entries returned                                        | number  |
+| Field   | Description                | Format  |
+| ------- | -------------------------- | ------- |
+| success | Request status             | boolean |
+| entries | List of station records    | array   |
+| length  | Number of entries returned | number  |
 
 **Station entry fields:**
 
-| Field      | Description                                                              | Format |
-| ---------- | -------------------------------------------------------------------------- | ------ |
-| objectid   | Stable identifier from the Stadt Köln source dataset                      | number |
-| street     | Street and house number, parsed from the source address                   | string |
-| rawAddress | Full source address, e.g. `"Bonner Str. 98 (50677 Neustadt/Süd)"`          | string |
-| lat        | Latitude                                                                   | number |
-| lon        | Longitude                                                                  | number |
+| Field      | Description                                                                              | Format |
+| ---------- | ---------------------------------------------------------------------------------------- | ------ |
+| objectid   | Stable identifier from the Stadt Köln source dataset                                     | number |
+| street     | Street and house number, parsed from the source address                                  | string |
+| rawAddress | Full source address, e.g. `"Bonner Str. 98 (50677 Neustadt/Süd)"`                        | string |
+| lat        | Latitude                                                                                 | number |
+| lon        | Longitude                                                                                | number |
 | distance   | Great-circle distance in km from `lat`/`lon`; present only when a center point was given | number |
 
 ---

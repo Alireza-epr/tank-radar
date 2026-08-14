@@ -1,4 +1,5 @@
 import apiConfig from "@/config/api.json";
 
 export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) || apiConfig.baseURL;
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+  apiConfig.baseURL;

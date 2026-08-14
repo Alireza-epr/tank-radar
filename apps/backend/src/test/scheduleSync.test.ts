@@ -31,7 +31,10 @@ describe("scheduleSync", () => {
     scheduleSync();
 
     expect(mockedSchedule).toHaveBeenCalledTimes(1);
-    expect(mockedSchedule).toHaveBeenCalledWith(env.syncCronSchedule, expect.any(Function));
+    expect(mockedSchedule).toHaveBeenCalledWith(
+      env.syncCronSchedule,
+      expect.any(Function),
+    );
   });
 
   it("calls_runSync_again_when_the_scheduled_callback_fires", () => {

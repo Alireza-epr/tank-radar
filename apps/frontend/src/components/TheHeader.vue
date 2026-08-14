@@ -1,22 +1,20 @@
 <template>
   <header class="header">
-    <h1 class="header_title">
-      Tank Radar
-    </h1>
+    <h1 class="header_title">Tank Radar</h1>
 
     <div class="header_actions">
       <div class="header_sync">
-        <span 
-          v-if="sync?.status" 
-          class="header_status" 
+        <span
+          v-if="sync?.status"
+          class="header_status"
           :class="`header_status--${sync.status}`"
         >
           {{ sync.status }}
         </span>
-        <button 
-          type="button" 
-          class="header_button" 
-          :disabled="isSyncing" 
+        <button
+          type="button"
+          class="header_button"
+          :disabled="isSyncing"
           @click="onSync"
         >
           {{ isSyncing ? "Syncing…" : "Sync" }}
@@ -28,16 +26,20 @@
       <div class="header_meta">
         <div class="header_meta-item">
           <span class="header_meta-label">Last Sync Try</span>
-          <span class="header_meta-value">{{ formatMetaDate(syncMeta?.latest?.finishedAt) }}</span>
+          <span class="header_meta-value">{{
+            formatMetaDate(syncMeta?.latest?.finishedAt)
+          }}</span>
         </div>
         <div class="header_meta-item">
           <span class="header_meta-label">Last Success</span>
-          <span class="header_meta-value">{{ formatMetaDate(syncMeta?.lastSuccess?.finishedAt) }}</span>
+          <span class="header_meta-value">{{
+            formatMetaDate(syncMeta?.lastSuccess?.finishedAt)
+          }}</span>
         </div>
-        <button 
-          type="button" 
-          class="header_button header_button--ghost" 
-          :disabled="isFetchingMeta" 
+        <button
+          type="button"
+          class="header_button header_button--ghost"
+          :disabled="isFetchingMeta"
           @click="onSyncMeta"
         >
           {{ isFetchingMeta ? "Getting…" : "Get Meta" }}
@@ -49,7 +51,10 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
-import { useSyncController, useSyncMetaController } from "@/controllers/syncController";
+import {
+  useSyncController,
+  useSyncMetaController,
+} from "@/controllers/syncController";
 import type { ISyncMeta, ISyncRunInput } from "@packages/types";
 import { formatLocalDateTime } from "@packages/utils";
 
@@ -68,8 +73,8 @@ export default defineComponent({
       isFetchingMeta.value = true;
       try {
         const resp = await useSyncMetaController();
-        if(!resp) {
-          syncMeta.value = undefined
+        if (!resp) {
+          syncMeta.value = undefined;
         }
 
         if (resp?.entries) {
@@ -84,19 +89,18 @@ export default defineComponent({
       isSyncing.value = true;
       try {
         const resp = await useSyncController();
-        if(!resp) {
+        if (!resp) {
           sync.value = {
-            status: "failed"
-          }
+            status: "failed",
+          };
         }
         if (resp?.entries) {
           sync.value = resp.entries[0];
         }
       } finally {
         isSyncing.value = false;
-        if(sync.value && sync.value.status !== "failed") await onSyncMeta();
+        if (sync.value && sync.value.status !== "failed") await onSyncMeta();
       }
-
     };
 
     onMounted(onSync);

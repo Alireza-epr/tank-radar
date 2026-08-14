@@ -1,13 +1,16 @@
 <template>
-  <div
-    ref="mapContainer"
-    class="map-wrapper"
-  />
+  <div ref="mapContainer" class="map-wrapper" />
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
-import { Map, Marker, NavigationControl, Popup, type MapMouseEvent } from "maplibre-gl";
+import {
+  Map,
+  Marker,
+  NavigationControl,
+  Popup,
+  type MapMouseEvent,
+} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { COLOGNE_CENTER, DEFAULT_ZOOM } from "@/config/mapConfig";
 import { createStationMarkerElement } from "@/config/markerIcons";
@@ -21,10 +24,22 @@ export default defineComponent({
   name: "MapWrapper",
   setup() {
     const mapContainer = ref<HTMLDivElement | null>(null);
-    const stations = useZustandStore(useStationStore, (a_State) => a_State.stations);
-    const selectedStationId = useZustandStore(useStationStore, (a_State) => a_State.selectedStationId);
-    const centerPoint = useZustandStore(useMapStore, (a_State) => a_State.centerPoint);
-    const isPickingCenter = useZustandStore(useMapStore, (a_State) => a_State.isPickingCenter);
+    const stations = useZustandStore(
+      useStationStore,
+      (a_State) => a_State.stations,
+    );
+    const selectedStationId = useZustandStore(
+      useStationStore,
+      (a_State) => a_State.selectedStationId,
+    );
+    const centerPoint = useZustandStore(
+      useMapStore,
+      (a_State) => a_State.centerPoint,
+    );
+    const isPickingCenter = useZustandStore(
+      useMapStore,
+      (a_State) => a_State.isPickingCenter,
+    );
     let map: Map | undefined;
     let markers: Marker[] = [];
     let centerMarker: Marker | undefined;
@@ -36,14 +51,24 @@ export default defineComponent({
       if (!map) return;
 
       for (const station of a_Stations) {
-        const popup = new Popup({ offset: 20 }).setText(`${station.street} (${station.rawAddress})`);
+        const popup = new Popup({ offset: 20 }).setText(
+          `${station.street} (${station.rawAddress})`,
+        );
         const isSelected = station.objectid === selectedStationId.value;
         const onMarkerClick = () => {
           useStationStore
             .getState()
-            .setSelectedStationId((prev) => (prev === station.objectid ? null : station.objectid));
+            .setSelectedStationId((prev) =>
+              prev === station.objectid ? null : station.objectid,
+            );
         };
-        const marker = new Marker({ element: createStationMarkerElement(isSelected, onMarkerClick, station.objectid) })
+        const marker = new Marker({
+          element: createStationMarkerElement(
+            isSelected,
+            onMarkerClick,
+            station.objectid,
+          ),
+        })
           .setLngLat([station.lon, station.lat])
           .setPopup(popup)
           .addTo(map);
@@ -57,7 +82,7 @@ export default defineComponent({
 
       if (!map || !a_Point) return;
 
-      centerMarker = new Marker({color: "green"})
+      centerMarker = new Marker({ color: "green" })
         .setLngLat([a_Point.lon, a_Point.lat])
         .addTo(map);
     };
@@ -70,7 +95,9 @@ export default defineComponent({
     const onMapClick = (e: MapMouseEvent) => {
       if (!isPickingCenter.value) return;
 
-      useMapStore.getState().setCenterPoint({ lat: e.lngLat.lat, lon: e.lngLat.lng });
+      useMapStore
+        .getState()
+        .setCenterPoint({ lat: e.lngLat.lat, lon: e.lngLat.lng });
       useMapStore.getState().setIsPickingCenter(false);
     };
 

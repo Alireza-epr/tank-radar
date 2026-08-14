@@ -14,25 +14,35 @@ jest.mock("@/utils/generalUtils", () => ({
 
 import { fetchWithRetry } from "@packages/utils";
 import { backend_log } from "@/utils/generalUtils";
-import { isValidStation, parseStreetFromAddress, useStationsAPI } from "@/utils/apiUtils";
+import {
+  isValidStation,
+  parseStreetFromAddress,
+  useStationsAPI,
+} from "@/utils/apiUtils";
 import type { IStation } from "@/types";
 
-const mockedFetchWithRetry = fetchWithRetry as jest.MockedFunction<typeof fetchWithRetry>;
+const mockedFetchWithRetry = fetchWithRetry as jest.MockedFunction<
+  typeof fetchWithRetry
+>;
 const mockedLog = backend_log as jest.MockedFunction<typeof backend_log>;
 
 describe("parseStreetFromAddress", () => {
   it("extracts_the_street_from_a_normal_address", () => {
-    expect(parseStreetFromAddress("Bonner Str. 98 (50677 Neustadt/Süd)")).toBe("Bonner Str. 98");
+    expect(parseStreetFromAddress("Bonner Str. 98 (50677 Neustadt/Süd)")).toBe(
+      "Bonner Str. 98",
+    );
   });
 
   it("handles_an_address_with_no_postal_code_parenthesis", () => {
-    expect(parseStreetFromAddress("Flughafen/Nordallee")).toBe("Flughafen/Nordallee");
+    expect(parseStreetFromAddress("Flughafen/Nordallee")).toBe(
+      "Flughafen/Nordallee",
+    );
   });
 
   it("trims_surrounding_whitespace_either_way", () => {
-    expect(parseStreetFromAddress("  Riehler Str. 12  (50668 Neustadt/Nord)")).toBe(
-      "Riehler Str. 12",
-    );
+    expect(
+      parseStreetFromAddress("  Riehler Str. 12  (50668 Neustadt/Nord)"),
+    ).toBe("Riehler Str. 12");
   });
 
   it("returns_an_empty_string_for_an_empty_address_missing_field", () => {
@@ -42,7 +52,10 @@ describe("parseStreetFromAddress", () => {
 
 describe("isValidStation", () => {
   const validStation: IStation = {
-    attributes: { objectid: 98, adresse: "Bonner Str. 98 (50677 Neustadt/Süd)" },
+    attributes: {
+      objectid: 98,
+      adresse: "Bonner Str. 98 (50677 Neustadt/Süd)",
+    },
     geometry: { x: 6.960644911005172, y: 50.916095041454554 },
   };
 
@@ -51,27 +64,42 @@ describe("isValidStation", () => {
   });
 
   it("rejects_a_station_with_a_missing_objectid", () => {
-    const station = { ...validStation, attributes: { ...validStation.attributes, objectid: undefined } };
+    const station = {
+      ...validStation,
+      attributes: { ...validStation.attributes, objectid: undefined },
+    };
     expect(isValidStation(station as unknown as IStation)).toBe(false);
   });
 
   it("rejects_a_station_with_a_non_integer_objectid", () => {
-    const station = { ...validStation, attributes: { ...validStation.attributes, objectid: 98.5 } };
+    const station = {
+      ...validStation,
+      attributes: { ...validStation.attributes, objectid: 98.5 },
+    };
     expect(isValidStation(station)).toBe(false);
   });
 
   it("rejects_a_station_with_a_missing_adresse", () => {
-    const station = { ...validStation, attributes: { ...validStation.attributes, adresse: undefined } };
+    const station = {
+      ...validStation,
+      attributes: { ...validStation.attributes, adresse: undefined },
+    };
     expect(isValidStation(station as unknown as IStation)).toBe(false);
   });
 
   it("rejects_a_station_with_a_blank_adresse", () => {
-    const station = { ...validStation, attributes: { ...validStation.attributes, adresse: "   " } };
+    const station = {
+      ...validStation,
+      attributes: { ...validStation.attributes, adresse: "   " },
+    };
     expect(isValidStation(station)).toBe(false);
   });
 
   it("rejects_a_station_with_non_numeric_coordinates", () => {
-    const station = { ...validStation, geometry: { x: "not-a-number", y: 50.9 } };
+    const station = {
+      ...validStation,
+      geometry: { x: "not-a-number", y: 50.9 },
+    };
     expect(isValidStation(station as unknown as IStation)).toBe(false);
   });
 
@@ -82,7 +110,9 @@ describe("isValidStation", () => {
 
   it("rejects_a_station_missing_attributes_or_geometry_entirely", () => {
     expect(isValidStation({} as IStation)).toBe(false);
-    expect(isValidStation({ attributes: validStation.attributes } as IStation)).toBe(false);
+    expect(
+      isValidStation({ attributes: validStation.attributes } as IStation),
+    ).toBe(false);
   });
 });
 

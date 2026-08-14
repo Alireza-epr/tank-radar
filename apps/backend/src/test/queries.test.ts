@@ -7,7 +7,13 @@ import type { IStation } from "@/types";
 process.env.DB_PATH = ":memory:";
 
 import { db } from "@/db/config";
-import { upsertStations, startSyncRun, completeSyncRun, getSyncMeta, getStations } from "@/db/queries";
+import {
+  upsertStations,
+  startSyncRun,
+  completeSyncRun,
+  getSyncMeta,
+  getStations,
+} from "@/db/queries";
 
 const stations = fixture.features as IStation[];
 
@@ -19,15 +25,18 @@ interface IStationRow {
 }
 
 const activeCount = () =>
-  (db.prepare("SELECT COUNT(*) AS n FROM stations WHERE is_active = 1").get() as { n: number }).n;
+  (
+    db
+      .prepare("SELECT COUNT(*) AS n FROM stations WHERE is_active = 1")
+      .get() as { n: number }
+  ).n;
 
 const totalCount = () =>
   (db.prepare("SELECT COUNT(*) AS n FROM stations").get() as { n: number }).n;
 
 const getStation = (a_Objectid: number) =>
   db.prepare("SELECT * FROM stations WHERE objectid = ?").get(a_Objectid) as
-    | IStationRow
-    | undefined;
+    IStationRow | undefined;
 
 describe("upsertStations", () => {
   beforeEach(() => {
@@ -37,7 +46,11 @@ describe("upsertStations", () => {
   it("inserts_every_station_on_a_fresh_sync", () => {
     const result = upsertStations(stations);
 
-    expect(result).toEqual({ upserted: stations.length, skipped: 0, deactivated: 0 });
+    expect(result).toEqual({
+      upserted: stations.length,
+      skipped: 0,
+      deactivated: 0,
+    });
     expect(activeCount()).toBe(stations.length);
   });
 
@@ -50,16 +63,24 @@ describe("upsertStations", () => {
     const after = getStation(98);
 
     expect(after?.import_date).toBe(before?.import_date);
-    expect(after && before && after.update_date >= before.update_date).toBe(true);
+    expect(after && before && after.update_date >= before.update_date).toBe(
+      true,
+    );
   });
 
   it("deactivates_a_station_missing_from_the_latest_fetch_even_run_back_to_back", () => {
     upsertStations(stations);
 
-    const withoutStation98 = stations.filter((s) => s.attributes.objectid !== 98);
+    const withoutStation98 = stations.filter(
+      (s) => s.attributes.objectid !== 98,
+    );
     const result = upsertStations(withoutStation98);
 
-    expect(result).toEqual({ upserted: withoutStation98.length, skipped: 0, deactivated: 1 });
+    expect(result).toEqual({
+      upserted: withoutStation98.length,
+      skipped: 0,
+      deactivated: 1,
+    });
     expect(getStation(98)?.is_active).toBe(0);
     expect(activeCount()).toBe(stations.length - 1);
   });
@@ -102,7 +123,10 @@ describe("upsertStations", () => {
 
   it("skips_a_station_with_non_numeric_coordinates", () => {
     const badStation = {
-      attributes: { objectid: 9998, adresse: "Bad Coords St. 1 (00000 Nowhere)" },
+      attributes: {
+        objectid: 9998,
+        adresse: "Bad Coords St. 1 (00000 Nowhere)",
+      },
       geometry: { x: "not-a-number", y: 50.9 },
     } as unknown as IStation;
 
@@ -227,7 +251,9 @@ describe("getStations", () => {
   it("sorts_by_street_ascending_by_default", () => {
     const result = getStations({});
     const streets = result.map((s) => s.street);
-    expect(streets).toEqual([...streets].sort((a, b) => a.localeCompare(b, "de")));
+    expect(streets).toEqual(
+      [...streets].sort((a, b) => a.localeCompare(b, "de")),
+    );
   });
 
   it("sorts_by_street_descending_when_requested", () => {
@@ -239,7 +265,11 @@ describe("getStations", () => {
 
   it("sorts_by_distance_ascending_from_a_given_center", () => {
     // Objectid 98's own coordinates - it should come back first (distance 0).
-    const result = getStations({ lat: 50.916095041454554, lon: 6.960644911005172, sortBy: "distance" });
+    const result = getStations({
+      lat: 50.916095041454554,
+      lon: 6.960644911005172,
+      sortBy: "distance",
+    });
     expect(result[0]?.objectid).toBe(98);
     const distances = result.map((s) => s.distance ?? 0);
     expect(distances).toEqual([...distances].sort((a, b) => a - b));
@@ -274,7 +304,13 @@ describe("getStations", () => {
 
   it("combines_search_radius_and_sort_together", () => {
     const center = { lat: 50.916095041454554, lon: 6.960644911005172 };
-    const result = getStations({ ...center, radius: 10, search: "Str", sortBy: "distance", sortDir: "asc" });
+    const result = getStations({
+      ...center,
+      radius: 10,
+      search: "Str",
+      sortBy: "distance",
+      sortDir: "asc",
+    });
 
     for (const station of result) {
       expect(station.street.toLowerCase()).toContain("str");

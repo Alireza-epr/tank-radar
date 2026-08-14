@@ -21,7 +21,10 @@ describe("useUrlStore", () => {
     useUrlStore.getState().setParams({ search: "Ring" });
     useUrlStore.getState().setParams((prev) => ({ ...prev, sortDir: "desc" }));
 
-    expect(useUrlStore.getState().params).toEqual({ search: "Ring", sortDir: "desc" });
+    expect(useUrlStore.getState().params).toEqual({
+      search: "Ring",
+      sortDir: "desc",
+    });
     expect(window.location.search).toContain("search=Ring");
     expect(window.location.search).toContain("sortDir=desc");
   });
@@ -36,7 +39,9 @@ describe("useUrlStore", () => {
   it("picks_up_params_already_in_the_url_when_the_store_is_read_fresh", () => {
     setUrl("?search=Ring&sortDir=desc");
 
-    const params = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+    const params = Object.fromEntries(
+      new URLSearchParams(window.location.search).entries(),
+    );
     expect(params).toEqual({ search: "Ring", sortDir: "desc" });
   });
 

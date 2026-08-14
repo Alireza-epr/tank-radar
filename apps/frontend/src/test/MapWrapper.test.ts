@@ -16,9 +16,25 @@ import MapWrapper from "@/components/MapWrapper.vue";
 import { useStationStore } from "@/store/stationStore";
 import { useMapStore } from "@/store/mapStore";
 
-const STATION_A = { objectid: 1, street: "Ring", rawAddress: "Ring 1", lat: 50.9, lon: 6.9 };
-const STATION_B = { objectid: 2, street: "Bahnhof", rawAddress: "Bahnhof 2", lat: 50.94, lon: 6.96 };
-const RESET_STATION_STATE = { stations: [], filters: {}, selectedStationId: null };
+const STATION_A = {
+  objectid: 1,
+  street: "Ring",
+  rawAddress: "Ring 1",
+  lat: 50.9,
+  lon: 6.9,
+};
+const STATION_B = {
+  objectid: 2,
+  street: "Bahnhof",
+  rawAddress: "Bahnhof 2",
+  lat: 50.94,
+  lon: 6.96,
+};
+const RESET_STATION_STATE = {
+  stations: [],
+  filters: {},
+  selectedStationId: null,
+};
 const RESET_MAP_STATE = { centerPoint: null, isPickingCenter: false };
 
 describe("MapWrapper", () => {
@@ -47,7 +63,10 @@ describe("MapWrapper", () => {
     wrapper = mount(MapWrapper);
 
     expect(MockMap).toHaveBeenCalledTimes(1);
-    const options = MockMap.mock.calls[0]?.[0] as { center: [number, number]; zoom: number };
+    const options = MockMap.mock.calls[0]?.[0] as {
+      center: [number, number];
+      zoom: number;
+    };
     expect(options.center).toEqual([6.9603, 50.9375]);
     expect(mockAddControl).toHaveBeenCalledTimes(1);
   });
@@ -60,13 +79,22 @@ describe("MapWrapper", () => {
   });
 
   it("plots_a_marker_per_station_already_in_the_store_on_mount", () => {
-    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A, STATION_B] });
+    useStationStore.setState({
+      ...RESET_STATION_STATE,
+      stations: [STATION_A, STATION_B],
+    });
 
     wrapper = mount(MapWrapper);
 
     expect(MockMarker).toHaveBeenCalledTimes(2);
-    expect(MockMarker).toHaveBeenNthCalledWith(1, expect.objectContaining({ element: expect.any(HTMLElement) }));
-    expect(MockMarker).toHaveBeenNthCalledWith(2, expect.objectContaining({ element: expect.any(HTMLElement) }));
+    expect(MockMarker).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ element: expect.any(HTMLElement) }),
+    );
+    expect(MockMarker).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ element: expect.any(HTMLElement) }),
+    );
     expect(mockSetLngLat).toHaveBeenCalledWith([STATION_A.lon, STATION_A.lat]);
     expect(mockSetLngLat).toHaveBeenCalledWith([STATION_B.lon, STATION_B.lat]);
     expect(mockMarkerAddTo).toHaveBeenCalledTimes(2);
@@ -99,11 +127,17 @@ describe("MapWrapper", () => {
   });
 
   it("gives_the_selected_station's_marker_a_bolder_background_than_the_others", () => {
-    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A, STATION_B], selectedStationId: STATION_B.objectid });
+    useStationStore.setState({
+      ...RESET_STATION_STATE,
+      stations: [STATION_A, STATION_B],
+      selectedStationId: STATION_B.objectid,
+    });
 
     wrapper = mount(MapWrapper);
 
-    const [firstCall, secondCall] = MockMarker.mock.calls as [{ element: HTMLElement }][];
+    const [firstCall, secondCall] = MockMarker.mock.calls as [
+      { element: HTMLElement },
+    ][];
     const backgroundA = firstCall?.[0].element.style.backgroundColor;
     const backgroundB = secondCall?.[0].element.style.backgroundColor;
 
@@ -123,17 +157,22 @@ describe("MapWrapper", () => {
   });
 
   it("selects_a_station_when_its_marker_is_clicked_and_deselects_it_on_a_second_click", () => {
-    useStationStore.setState({ ...RESET_STATION_STATE, stations: [STATION_A, STATION_B] });
+    useStationStore.setState({
+      ...RESET_STATION_STATE,
+      stations: [STATION_A, STATION_B],
+    });
     wrapper = mount(MapWrapper);
 
     const [firstCall] = MockMarker.mock.calls as [{ element: HTMLElement }][];
     firstCall?.[0].element.click();
-    expect(useStationStore.getState().selectedStationId).toBe(STATION_A.objectid);
+    expect(useStationStore.getState().selectedStationId).toBe(
+      STATION_A.objectid,
+    );
 
     // The marker was re-rendered for the new selection - grab the fresh element.
-    const latestFirstCall = MockMarker.mock.calls[MockMarker.mock.calls.length - 2] as
-      | [{ element: HTMLElement }]
-      | undefined;
+    const latestFirstCall = MockMarker.mock.calls[
+      MockMarker.mock.calls.length - 2
+    ] as [{ element: HTMLElement }] | undefined;
     latestFirstCall?.[0].element.click();
     expect(useStationStore.getState().selectedStationId).toBeNull();
   });
@@ -152,7 +191,10 @@ describe("MapWrapper", () => {
 
     triggerMapClick({ lat: 50.91, lng: 6.92 });
 
-    expect(useMapStore.getState().centerPoint).toEqual({ lat: 50.91, lon: 6.92 });
+    expect(useMapStore.getState().centerPoint).toEqual({
+      lat: 50.91,
+      lon: 6.92,
+    });
     expect(useMapStore.getState().isPickingCenter).toBe(false);
   });
 
@@ -177,7 +219,7 @@ describe("MapWrapper", () => {
     await flushPromises();
 
     expect(MockMarker).toHaveBeenCalledTimes(1);
-    expect(MockMarker).toHaveBeenCalledWith({"color": "green"});
+    expect(MockMarker).toHaveBeenCalledWith({ color: "green" });
     expect(mockSetLngLat).toHaveBeenCalledWith([6.9603, 50.9375]);
 
     useMapStore.getState().setCenterPoint(null);

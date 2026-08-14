@@ -19,6 +19,6 @@ export const stationsController = (a_Req: Request, a_Res: Response) => {
   return controllerResponse(a_Res, EStatusCode.OK_200, {
     success: true,
     entries: stations,
-    length: stations.length
+    length: stations.length,
   });
 };

@@ -4,7 +4,10 @@ export const formatTimestamp = (a_Date?: Date): string => {
 
 export const formatLocalDateTime = (a_Value: string | Date): string => {
   const date = typeof a_Value === "string" ? new Date(a_Value) : a_Value;
-  return date.toLocaleString(undefined, { dateStyle: "short", timeStyle: "medium" });
+  return date.toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "medium",
+  });
 };
 
 export const formatCoordinate = (a_Value: number, a_Decimals = 2): string => {
